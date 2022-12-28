@@ -1,5 +1,6 @@
 ### R code to clean iButton time and date                              ###
 ###############################################################################
+# Need to update with Google Drive access
 rm(list=objects()) 
 setwd( "G:/My Drive/FolderTrabajoPersonal/Loma Experiment/iButton/Gabin")
 setwd( "G:/My Drive/FolderTrabajoPersonal/Loma Experiment/iButton/raw_data_Zhao")     
