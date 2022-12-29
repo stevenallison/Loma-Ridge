@@ -6,8 +6,10 @@ library(tidyverse)
 library(vegan)
 
 # Read in data from Google Drive; will be asked to authorize access
-sp2009 <- drive_get("DOE_LRG_Updated_SppComp_2009.csv") %>%
-  drive_read_string() %>%
+# Need to specify shared drive to avoid local duplicates
+# Some csv files are in standard UTF-8 but others are Windows encoded
+sp2009 <- drive_get("DOE_LRG_Updated_SppComp_2009.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.)
 
 head(sp2009)
@@ -20,43 +22,43 @@ filter(Subplot=="P")
 ftable(sp2009[,c("Year", "Water_Treatment", "Nitrogen_Treatment")]) 
 
 ## Call species list
-setwd("G:/Shared drives/Microbes and Global Change/Loma Ridge/Experiments/Ecosystem manipulation/Data/Plant_Species_Composition/SpeciesListCodes")
-
-#sp <- read_csv("Spp_List_GL_2020_2022.csv")
-sp <- read_csv("Spp_List_Update_GL_2009_2019.csv")
+# "Spp_List_GL_2020_2022.csv"
+sp <- drive_get("Spp_List_Update_GL_2009_2019.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="Windows-1252") %>%
+  read.csv(text=.)
 
 sp.2 <-sp %>%
 select(NewSpeciesCode,Native.Non.Native, Functional.Group)%>%
   rename(SpeciesCode = NewSpeciesCode)
 
 ## Summarize species hits/abundance per treatment and species
-## here hits that are separated in permantnet plot plut seed add
+## here hits that are separated in permanent plot plus seed add
 ## are add up
-d.long<-sp2009%>%
+d.long<-sp2009 %>%
   # Unselected elements below will change
   select(-UNKGRASS, -UNKSHRUB,-UNKFORB)%>% #remove those codes for unknown
   #make sure that there is a match for species name in the lien below
-  pivot_longer(AMSMEN:FESMYU, names_to="SpeciesCode", values_to="Abundance")%>%
+  pivot_longer(AMSMEN:FESMYU, names_to="SpeciesCode", values_to="Abundance") %>%
   # NEW CODE: group_by tells R which columns to summarize by
-  group_by(Plot_ID, Water_Treatment, Nitrogen_Treatment, SpeciesCode)%>%
+  group_by(Plot_ID, Water_Treatment, Nitrogen_Treatment, SpeciesCode) %>%
   # NEW CODE: with summarize you specify the new column name and how to summarize the data for that column
-  summarize(SpHitsAbun=sum(Abundance, na.rm=T))%>% # here all the hits separated in P and S become one.
-  mutate(Year=2009)%>%
+  summarize(SpHitsAbun=sum(Abundance, na.rm=T)) %>% # here all the hits separated in P and S become one.
+  mutate(Year=2009) %>%
   data.frame()
   
 #d.response<-d.long%>%
   
-##  Total cover per native or non-native and functional group
-cover.natfun<-d.long %>%
-  left_join(sp.2, by=c('SpeciesCode'='SpeciesCode'))%>% # add species attributes
-  filter(Native.Non.Native=="Native")%>%
+## Total cover per native or non-native and functional group
+cover.natfun <- d.long %>%
+  left_join(sp.2, by=c('SpeciesCode'='SpeciesCode')) %>% # add species attributes
+  filter(Native.Non.Native=="Native") %>%
   #mutate(Functional.Group = fct_recode(Functional.Group, 
   #                                   "forb"="Forb",
-  #                                "perennial.forb"="perennial forb"))%>%
-  #filter(Functional.Group == "forb" | Functional.Group == "perennial.forb")%>%
-  group_by(Plot_ID, Functional.Group)%>%
-  summarize(group_abund=sum(SpHitsAbun, na.rm=T))%>%
-  pivot_wider(names_from = Functional.Group, values_from = group_abund)%>%
+  #                                "perennial.forb"="perennial forb")) %>%
+  #filter(Functional.Group == "forb" | Functional.Group == "perennial.forb") %>%
+  group_by(Plot_ID, Functional.Group) %>%
+  summarize(group_abund=sum(SpHitsAbun, na.rm=T)) %>%
+  pivot_wider(names_from = Functional.Group, values_from = group_abund) %>%
   # 102 represents the number of points intersect used to get hit numbers
   # 100 to convert to percentage
   # mutate(CoverPerNatFor = forb/102 * 100)%>% 
@@ -67,7 +69,7 @@ cover.natfun<-d.long %>%
   #GrashitsNat = grass,
   #ShrshitsNat = shrub
   #      ) %>%
-  mutate(Year=2009)%>%
+  mutate(Year=2009) %>%
   data.frame()
 
 setwd("C:/Users/Dilys Vela/Documents/UCI/MicrobiomesClimateChange/LTREB/codeR")
