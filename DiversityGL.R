@@ -1,26 +1,14 @@
-## This code helps species richness and species diversity
-## for the historical grassland dataset
-rm(list=objects()) 
-#If working with Google Drive
-setwd("G:/Shared drives/Microbes and Global Change/Loma Ridge/Experiments/Ecosystem manipulation/Data/Plant_Species_Composition/UpdatedFilesGL")
-
-#If working locally
-setwd("C:/Users/Dilys Vela/Documents/UCI/MicrobiomesClimateChange/LTREB/codeR/UpdatedFilesGL/UpdatedFilesGL")
-
-
-## Functions from tidyr: 
-# pivot_longer: convert many columns into variable/value pairs; akin to melt in reshape (previous gather in tidyr)
-# pivot_wider: convert variable/value pairs into columns; akin to cast in reshape (previously spread in tidyr)
-
-# Load the tidyverse
+## Load packages
+library(googledrive)
+library(googlesheets4)
+#library(readxl) # not sure if needed
 library(tidyverse)
 library(vegan)
-#################################################################### 
-## Part 1: Call your file                                         ##
-####################################################################
-## Read in the raw data
 
-sp2009 <- read_csv("DOE_LRG_Updated_SppComp_2009.csv")
+# Read in data from Google Drive; will be asked to authorize access
+sp2009 <- drive_get("DOE_LRG_Updated_SppComp_2009.csv") %>%
+  drive_read_string() %>%
+  read.csv(text=.)
 
 head(sp2009)
 

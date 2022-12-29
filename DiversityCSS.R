@@ -1,11 +1,13 @@
-## This file allow calculating diversity and species richness
-## for the costal sage shrublands data set
-rm(list=objects()) 
-setwd("G:/Shared drives/Microbes and Global Change/Loma Ridge/Experiments/Ecosystem manipulation/Data/Plant_Species_Composition/UpdatedFilesCSS/Older_Datasets")
-setwd("C:/Users/Dilys Vela/Downloads")
-## Functions from tidyr: 
-# pivot_longer: convert many columns into variable/value pairs; akin to melt in reshape (previous gather in tidyr)
-# pivot_wider: convert variable/value pairs into columns; akin to cast in reshape (previously spread in tidyr)
+## Load packages
+library(googledrive)
+library(googlesheets4)
+#library(readxl)
+
+# Read in data from Google Drive; will be asked to authorize access
+# Need to track down this file
+sp2020 <- drive_get("Loma_CSS_Species_Comp_Combined.csv") %>%
+  drive_read_string() %>%
+  read.csv(text=.)
 
 # Load the tidyverse
 library(tidyverse)

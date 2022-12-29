@@ -9,6 +9,7 @@ library(ggplot2)
 #library(plyr)
 library(ggthemes)
 
+# need to track down this file and how it was generated
 AllVariables <- read.csv("AllYearsResponsevariables.csv") 
 
 
