@@ -58,66 +58,56 @@ GL.2021 <- drive_get("DOE_LRG_Updated_SppComp_2021.csv", shared_drive = "Microbe
 
 
 GL.2009.long <- GL.2009 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2010.long <- GL.2010 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2011.long <- GL.2011 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2012.long <- GL.2012 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2013.long <- GL.2013 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2014.long <- GL.2014 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2015.long <- GL.2015 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2016.long <- GL.2016 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2018.long <- GL.2018 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2019.long <- GL.2019 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2020.long <- GL.2020 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.2021.long <- GL.2021 %>%
-  select(-Water_Treatment,-TreatedWater,-Nitrogen_Treatment,-TreatedNitrogen) %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits", cols = !c(Year,Plot_ID,Subplot))
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
 GL.long <- rbind(GL.2009.long,GL.2010.long,GL.2011.long,GL.2012.long,GL.2013.long,GL.2014.long,
                  GL.2015.long,GL.2016.long,GL.2018.long,GL.2019.long,GL.2020.long,GL.2021.long) %>%
   filter(Subplot=="P")
-
-
-head(sp2009)
-
-sp2009 <- sp2009 %>%
-  mutate(PlotNum=substr(Plot_ID, 1, 3) )%>%
-  filter(Subplot=="P")
-
-## Frequency tables to see how many rows/sampling units are present for  treatments
-ftable(sp2009[,c("Year", "Water_Treatment", "Nitrogen_Treatment")]) 
 
 ## Call species list
 # "Spp_List_GL_2020_2022.csv"
