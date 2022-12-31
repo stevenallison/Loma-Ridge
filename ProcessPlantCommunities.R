@@ -107,7 +107,8 @@ GL.2021.long <- GL.2021 %>%
 
 GL.long <- rbind(GL.2009.long,GL.2010.long,GL.2011.long,GL.2012.long,GL.2013.long,GL.2014.long,
                  GL.2015.long,GL.2016.long,GL.2018.long,GL.2019.long,GL.2020.long,GL.2021.long) %>%
-  filter(Subplot=="P")
+  mutate(Ecosystem = "Grassland") %>%
+  mutate(Cover = Hits*100/102)
 
 
 CSS.2009 <- drive_get("DOE_LRS_Updated_SppComp_2009.csv", shared_drive = "Microbes and Global Change") %>%
@@ -177,7 +178,13 @@ CSS.2018.long <- CSS.2018 %>%
 
 CSS.long <- rbind(CSS.2009.long,CSS.2010.long,CSS.2011.long,CSS.2012.long,CSS.2013.long,CSS.2014.long,
                  CSS.2015.long,CSS.2018.long) %>%
-  filter(Subplot=="P")
+  mutate(Ecosystem = "CSS") %>%
+  mutate(Cover = Hits)
+
+# Combine the GL and CSS ecosystem data and average across subplots
+veg <- (rbind(GL.long,CSS.long)) %>%
+  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Species.Code) %>%
+  summarize(Cover = mean(Cover))
 
 # Input species list
 Species.list <- drive_get("SpeciesListLoma.csv", shared_drive = "Microbes and Global Change") %>%
@@ -187,5 +194,45 @@ Species.list <- drive_get("SpeciesListLoma.csv", shared_drive = "Microbes and Gl
 # When adding data from a new year, need to check the species list against the codes in the data
 # setdiff() returns species codes in the new data that are not in the existing list
 # Add codes and info to SpeciesListLoma.csv as needed
-Updated.species <- levels(factor(rbind(GL.long,CSS.long)$Species.Code))
+Updated.species <- levels(factor(veg$Species.Code))
 setdiff(Updated.species,Species.list$Species.Code)
+
+# merge cover data with species attributes
+veg.species <- veg %>%
+  left_join(Species.list)
+
+# compute cover for native/non-native by plot
+native.cover <- veg.species %>%
+  filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
+  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Native.Non.Native) %>%
+  summarize(Native.Cover = sum(Cover)) %>%
+  pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover)
+
+# compute cover for functional groups by plot
+functional.cover <- veg.species %>%
+  filter(!Functional.Group %in% c("Stem","Unknown")) %>%
+  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Functional.Group) %>%
+  summarize(Funct.Cover = sum(Cover)) %>%
+  pivot_wider(names_from = Functional.Group, values_from = Funct.Cover)
+
+# compute cover for native/non-native and functional group by plot
+native.functional.cover <- veg.species %>%
+  filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
+  mutate(Native.Functional = interaction(Native.Non.Native,Functional.Group,sep = " ")) %>%
+  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Native.Functional) %>%
+  summarize(Native.Funct.Cover = sum(Cover)) %>%
+  pivot_wider(names_from = Native.Functional, values_from = Native.Funct.Cover)
+
+# compute diversity indices by plot
+veg.diversity <- veg.species %>%
+  filter(!Native.Non.Native %in% c("Stem","Unknown","Litter","Bare ground")) %>%
+  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID) %>%
+  summarize(Richness = specnumber(Cover), Shannon.diversity = diversity(Cover), Simpson.diversity = diversity(Cover, "simpson")) %>%
+  mutate(Evenness = Shannon.diversity/log(Richness))
+
+# merge all plot level metrics
+veg.metrics <- native.cover %>%
+  left_join(functional.cover) %>%
+  left_join(native.functional.cover) %>%
+  left_join(veg.diversity) %>%
+  select(-`Bare ground Bare ground`,-`Litter Litter`)
