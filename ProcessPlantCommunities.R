@@ -245,6 +245,7 @@ veg.means <- ungroup(veg.metrics) %>%
   group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment) %>%
   summarize(across(everything(),list(mean = mean, se = std.error)))
 
+pdf("Graphics/NativeCover.pdf",width = 10,height = 6)
 ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment, 
               group = Water_Treatment, linetype = Water_Treatment, shape = Water_Treatment)) + 
   geom_errorbar(aes(ymin=(Native_mean-Native_se), ymax=(Native_mean+Native_se)), width=.1, lty=1, show.legend = F) +
@@ -254,7 +255,7 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment,
        linetype = "Water_Treatment",
        shape = "Water_Treatment",
        y = "Mean native cover (%)") +
-  scale_color_manual(values=c('blue','green','red')) +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -268,5 +269,5 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment,
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
   facet_grid(Nitrogen_Treatment~Ecosystem)
-
+dev.off()
 
