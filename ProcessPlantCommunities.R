@@ -236,3 +236,37 @@ veg.metrics <- native.cover %>%
   left_join(native.functional.cover) %>%
   left_join(veg.diversity) %>%
   select(-`Bare ground Bare ground`,-`Litter Litter`)
+
+# compute means and standard errors for all plot level metrics by ecosystem, year, and treatment
+std.error <- function(x) sd(x)/sqrt(length(x))
+veg.means <- ungroup(veg.metrics) %>%
+  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & TreatedWater == 0)) %>%
+  select(-TreatedWater,-TreatedNitrogen,-Plot_ID) %>%
+  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment) %>%
+  summarize(across(everything(),list(mean = mean, se = std.error)))
+
+ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment, 
+              group = Water_Treatment, linetype = Water_Treatment, shape = Water_Treatment)) + 
+  geom_errorbar(aes(ymin=(Native_mean-Native_se), ymax=(Native_mean+Native_se)), width=.1, lty=1, show.legend = F) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water_Treatment",
+       linetype = "Water_Treatment",
+       shape = "Water_Treatment",
+       y = "Mean native cover (%)") +
+  scale_color_manual(values=c('blue','green','red')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position="right", 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Nitrogen_Treatment~Ecosystem)
+
+
