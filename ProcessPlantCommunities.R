@@ -2,6 +2,7 @@
 library(googledrive)
 library(tidyverse)
 library(vegan)
+library(readxl)
 
 # Read in data from Google Drive; will be asked to authorize access
 # Need to specify shared drive to avoid accessing local duplicates
@@ -107,7 +108,6 @@ GL.2021.long <- GL.2021 %>%
 
 GL.long <- rbind(GL.2009.long,GL.2010.long,GL.2011.long,GL.2012.long,GL.2013.long,GL.2014.long,
                  GL.2015.long,GL.2016.long,GL.2018.long,GL.2019.long,GL.2020.long,GL.2021.long) %>%
-  mutate(Ecosystem = "Grassland") %>%
   mutate(Cover = Hits*100/102)
 
 
@@ -142,6 +142,26 @@ CSS.2015 <- drive_get("DOE_LRS_Updated_SppComp_2015.csv", shared_drive = "Microb
 CSS.2018 <- drive_get("DOE_LRS_Updated_SppComp_2018.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.)
+
+drive_get("2020 Loma CSS Species Comp_QC.xlsx", shared_drive = "Microbes and Global Change") %>%
+  drive_download(path = 'CSS.2020.xlsx', overwrite = TRUE)
+
+CSS.2020 <- read_excel("CSS.2020.xlsx",sheet="Species Comp Data") %>%
+  slice(-1) %>%
+  select(Plot_ID,Subplot=`Plot Type`,Species.Code=Code,Cover=`Pecent Cover`) %>%
+  mutate(Year = 2020) %>%
+  mutate(Plot_ID = str_remove_all(Plot_ID,"_")) %>%
+  mutate(Cover = as.numeric(str_remove_all(Cover,"<")))
+
+drive_get("2021 Loma CSS Species Comp_QC.xlsx", shared_drive = "Microbes and Global Change") %>%
+  drive_download(path = 'CSS.2021.xlsx', overwrite = TRUE)
+
+CSS.2021 <- read_excel("CSS.2021.xlsx",sheet="Species Comp Data") %>%
+  slice(-1) %>%
+  select(Plot_ID,Subplot=`Plot Type`,Species.Code=Code,Cover=`Pecent Cover`) %>%
+  mutate(Year = 2021) %>%
+  mutate(Plot_ID = str_remove_all(Plot_ID,"_")) %>%
+  mutate(Cover = as.numeric(str_remove_all(Cover,"<")))
 
 
 CSS.2009.long <- CSS.2009 %>%
@@ -178,12 +198,20 @@ CSS.2018.long <- CSS.2018 %>%
 
 CSS.long <- rbind(CSS.2009.long,CSS.2010.long,CSS.2011.long,CSS.2012.long,CSS.2013.long,CSS.2014.long,
                  CSS.2015.long,CSS.2018.long) %>%
-  mutate(Ecosystem = "CSS") %>%
   mutate(Cover = Hits)
 
-# Combine the GL and CSS ecosystem data and average across subplots
+# Input key to plot IDs
+PlotTreatments <- drive_get("PlotTreatments.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) 
+
+# Combine the GL and CSS vegetation data
+# Add plot information and average across subplots
 veg <- (rbind(GL.long,CSS.long)) %>%
-  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Species.Code) %>%
+  select(Year,Plot_ID,Subplot,Species.Code,Cover) %>%
+  rbind(CSS.2020, CSS.2021) %>%
+  left_join(PlotTreatments) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Species.Code) %>%
   summarize(Cover = mean(Cover))
 
 # Input species list
@@ -195,7 +223,7 @@ Species.list <- drive_get("SpeciesListLoma.csv", shared_drive = "Microbes and Gl
 # setdiff() returns species codes in the new data that are not in the existing list
 # Add codes and info to SpeciesListLoma.csv as needed
 Updated.species <- levels(factor(veg$Species.Code))
-setdiff(Updated.species,Species.list$Species.Code)
+write.csv(setdiff(Updated.species,Species.list$Species.Code),"SppList.csv")
 
 # merge cover data with species attributes
 veg.species <- veg %>%
@@ -240,12 +268,13 @@ veg.metrics <- native.cover %>%
 # compute means and standard errors for all plot level metrics by ecosystem, year, and treatment
 std.error <- function(x) sd(x)/sqrt(length(x))
 veg.means <- ungroup(veg.metrics) %>%
+  mutate(Nitrogen_Treatment = str_replace(Nitrogen_Treatment,"Added","Nitrogen")) %>%
   filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & TreatedWater == 0)) %>%
   select(-TreatedWater,-TreatedNitrogen,-Plot_ID) %>%
   group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment) %>%
   summarize(across(everything(),list(mean = mean, se = std.error)))
 
-pdf("Graphics/NativeCover.pdf",width = 10,height = 6)
+pdf("Graphics/NativeCover.pdf",width = 8,height = 6)
 ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment, 
               group = Water_Treatment, linetype = Water_Treatment, shape = Water_Treatment)) + 
   geom_errorbar(aes(ymin=(Native_mean-Native_se), ymax=(Native_mean+Native_se)), width=.1, lty=1, show.legend = F) +
@@ -262,7 +291,7 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment,
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position="right", 
+        legend.position=c(0.8,0.8), 
         legend.title = element_text(size=14),
         legend.key.width= unit(1.5, 'cm'),
         legend.text = element_text(size=12),
