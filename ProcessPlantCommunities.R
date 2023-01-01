@@ -210,6 +210,7 @@ PlotTreatments <- drive_get("PlotTreatments.csv", shared_drive = "Microbes and G
 veg <- (rbind(GL.long,CSS.long)) %>%
   select(Year,Plot_ID,Subplot,Species.Code,Cover) %>%
   rbind(CSS.2020, CSS.2021) %>%
+  mutate(Plot_ID = str_replace(Plot_ID,"GL","G")) %>%
   left_join(PlotTreatments) %>%
   group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Species.Code) %>%
   summarize(Cover = mean(Cover))
@@ -223,7 +224,7 @@ Species.list <- drive_get("SpeciesListLoma.csv", shared_drive = "Microbes and Gl
 # setdiff() returns species codes in the new data that are not in the existing list
 # Add codes and info to SpeciesListLoma.csv as needed
 Updated.species <- levels(factor(veg$Species.Code))
-write.csv(setdiff(Updated.species,Species.list$Species.Code),"SppList.csv")
+setdiff(Updated.species,Species.list$Species.Code)
 
 # merge cover data with species attributes
 veg.species <- veg %>%
@@ -232,14 +233,14 @@ veg.species <- veg %>%
 # compute cover for native/non-native by plot
 native.cover <- veg.species %>%
   filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
-  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Native.Non.Native) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Non.Native) %>%
   summarize(Native.Cover = sum(Cover)) %>%
   pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover)
 
 # compute cover for functional groups by plot
 functional.cover <- veg.species %>%
   filter(!Functional.Group %in% c("Stem","Unknown")) %>%
-  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Functional.Group) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Functional.Group) %>%
   summarize(Funct.Cover = sum(Cover)) %>%
   pivot_wider(names_from = Functional.Group, values_from = Funct.Cover)
 
@@ -247,14 +248,14 @@ functional.cover <- veg.species %>%
 native.functional.cover <- veg.species %>%
   filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
   mutate(Native.Functional = interaction(Native.Non.Native,Functional.Group,sep = " ")) %>%
-  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID,Native.Functional) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Functional) %>%
   summarize(Native.Funct.Cover = sum(Cover)) %>%
   pivot_wider(names_from = Native.Functional, values_from = Native.Funct.Cover)
 
 # compute diversity indices by plot
 veg.diversity <- veg.species %>%
   filter(!Native.Non.Native %in% c("Stem","Unknown","Litter","Bare ground")) %>%
-  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment,TreatedWater,TreatedNitrogen,Plot_ID) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID) %>%
   summarize(Richness = specnumber(Cover), Shannon.diversity = diversity(Cover), Simpson.diversity = diversity(Cover, "simpson")) %>%
   mutate(Evenness = Shannon.diversity/log(Richness))
 
@@ -268,22 +269,21 @@ veg.metrics <- native.cover %>%
 # compute means and standard errors for all plot level metrics by ecosystem, year, and treatment
 std.error <- function(x) sd(x)/sqrt(length(x))
 veg.means <- ungroup(veg.metrics) %>%
-  mutate(Nitrogen_Treatment = str_replace(Nitrogen_Treatment,"Added","Nitrogen")) %>%
-  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & TreatedWater == 0)) %>%
-  select(-TreatedWater,-TreatedNitrogen,-Plot_ID) %>%
-  group_by(Ecosystem,Year,Water_Treatment,Nitrogen_Treatment) %>%
+  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
+  select(-Treated_2015_2020,-Plot_ID) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen) %>%
   summarize(across(everything(),list(mean = mean, se = std.error)))
 
 pdf("Graphics/NativeCover.pdf",width = 8,height = 6)
-ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment, 
-              group = Water_Treatment, linetype = Water_Treatment, shape = Water_Treatment)) + 
+ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water, 
+              group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(Native_mean-Native_se), ymax=(Native_mean+Native_se)), width=.1, lty=1, show.legend = F) +
   geom_line() +
   geom_point(size = 2) +
-  labs(color = "Water_Treatment",
-       linetype = "Water_Treatment",
-       shape = "Water_Treatment",
-       y = "Mean native cover (%)") +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Native cover (%)") +
   scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
@@ -297,6 +297,15 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water_Treatment,
         legend.text = element_text(size=12),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen_Treatment~Ecosystem)
+  facet_grid(Nitrogen~Ecosystem)
 dev.off()
 
+# G11RRX mislabeled as G11RXX in 2020, 2021
+# Plot ID should start with S for CSS/Shrubland and G for Grassland (not CSS or GL as in 2020-21)
+# 2020 CSS data is missing S48RXN
+# S48LXX mislabeled as S48LAX in 2021
+# 2011 CSS cover data are 1/3 of previous analyses
+# 2009, 2010 CSS cover data are 2/3 of previous analyses
+# 2012 cover data match previous datasets but somewhat higher than Kimball et al 2014
+# Need to locate DOE_LRS_Data_SpeciesComp_Entered_Updated2018.csv
+# And determine if different from https://docs.google.com/spreadsheets/d/1YuONxw0scacz-sgwCo4IQBOJWGKtDhlY
