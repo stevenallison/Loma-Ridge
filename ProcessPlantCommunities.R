@@ -309,3 +309,4 @@ dev.off()
 # 2012 cover data match previous datasets but somewhat higher than Kimball et al 2014
 # Need to locate DOE_LRS_Data_SpeciesComp_Entered_Updated2018.csv
 # And determine if different from https://docs.google.com/spreadsheets/d/1YuONxw0scacz-sgwCo4IQBOJWGKtDhlY
+# Need the 2022 data
