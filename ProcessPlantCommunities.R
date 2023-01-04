@@ -274,6 +274,7 @@ veg.means <- ungroup(veg.metrics) %>%
   group_by(Ecosystem,Year,Water,Nitrogen) %>%
   summarize(across(everything(),list(mean = mean, se = std.error)))
 
+# Plot native cover in CSS
 pdf("Graphics/NativeCover.pdf",width = 8,height = 6)
 ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water, 
               group = Water, linetype = Water, shape = Water)) + 
@@ -300,13 +301,44 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water,
   facet_grid(Nitrogen~Ecosystem)
 dev.off()
 
+# Plot native shrub cover in CSS
+pdf("Graphics/NativeShrubCover.pdf",width = 8,height = 6)
+ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water, 
+                      group = Water, linetype = Water, shape = Water)) + 
+  geom_errorbar(aes(ymin=(`Native Shrub_mean`-`Native Shrub_se`), ymax=(`Native Shrub_mean`+`Native Shrub_se`)), width=.1, lty=1, show.legend = F) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Native shrub cover (%)") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position=c(0.8,0.8), 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Nitrogen~Ecosystem)
+dev.off()
+
+## Resolved issues ##
 # G11RRX mislabeled as G11RXX in 2020, 2021
 # Plot ID should start with S for CSS/Shrubland and G for Grassland (not CSS or GL as in 2020-21)
-# 2020 CSS data is missing S48RXN
 # S48LXX mislabeled as S48LAX in 2021
 # 2011 CSS cover data are 1/3 of previous analyses
 # 2009, 2010 CSS cover data are 2/3 of previous analyses
-# 2012 cover data match previous datasets but somewhat higher than Kimball et al 2014
 # Need to locate DOE_LRS_Data_SpeciesComp_Entered_Updated2018.csv
 # And determine if different from https://docs.google.com/spreadsheets/d/1YuONxw0scacz-sgwCo4IQBOJWGKtDhlY
+
+## Unresolved issues ##
+# 2012 cover data match previous datasets but somewhat higher than Kimball et al 2014
+# 2020 CSS data is missing S48RXN
 # Need the 2022 data
+# Looks like starting in 2020, CSS data collection involved a separate ground cover estimation that adds up to 100%
