@@ -7,6 +7,8 @@ library(readxl)
 # Read in data from Google Drive (will be asked to authorize access)
 # Need to specify shared drive to avoid accessing local duplicates
 # Some csv files are in standard UTF-8 but others are Windows encoded
+
+# Species composition
 GL.2009 <- drive_get("DOE_LRG_Updated_SppComp_2009.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.)
@@ -327,6 +329,189 @@ ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water,
         panel.grid.minor = element_blank()) +
   facet_grid(Nitrogen~Ecosystem)
 dev.off()
+
+
+
+# Biomass
+GL.Biomass.2007 <- drive_get("DOE_GL_Data_Biomass_Updated_2006_2007.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Biomass,Area=Area.m2) %>%
+  mutate(Year=2007,Frame=NA,Per.Grass=NA,Per.Forb=NA,Per.Bare=NA,Per.Litter=NA,Per.Live=NA,LitterMass=NA) %>%
+  mutate(Plot_ID = str_replace(Plot_ID,"GR([1-9])([LR])","G0\\1\\2")) %>%
+  mutate(Plot_ID = str_replace(Plot_ID,"GR","G"))
+
+GL.Biomass.2008 <- drive_get("DOE_GL_Data_Biomass_Updated_2007_2008.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame=Sample,Per.Grass,Per.Forb,Per.Bare,Biomass,Area=Area.m2) %>%
+  mutate(Year=2008,Per.Litter=NA,Per.Live=NA,LitterMass=NA)
+
+GL.Biomass.2009 <- drive_get("DOE_GL_Data_Biomass_Updated_2008_2009.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Biomass=BiomassSum,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2009,Per.Litter=NA,Per.Live=NA)
+
+GL.Biomass.2010 <- drive_get("DOE_GL_Data_Biomass_Updated_2009_2010.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb=Per.Forb.Other,Per.Bare,Biomass=BiomassSum,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2010,Per.Litter=NA,Per.Live=NA)
+
+GL.Biomass.2011 <- drive_get("DOE_GL_Data_Biomass_Updated_2010_2011.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2011)
+
+GL.Biomass.2012 <- drive_get("DOE_GL_Data_Biomass_Updated_2011_2012.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2012)
+
+GL.Biomass.2013 <- drive_get("DOE_GL_Data_Biomass_Updated_2012_2013.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID=Plot,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2013)
+
+GL.Biomass.2014 <- drive_get("DOE_GL_Data_Biomass_Updated_2013_2014.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2014)
+
+GL.Biomass.2015 <- drive_get("DOE_GL_Data_Biomass_Updated_2014_2015.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2015)
+
+GL.Biomass.2016 <- drive_get("DOE_GL_Data_Biomass_Updated_2015_2016.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2016)
+
+GL.Biomass.2017 <- drive_get("DOE_GL_Data_Biomass_Updated_2016_2017.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2017) %>%
+  filter(Frame==1)
+
+GL.Biomass.2018 <- drive_get("DOE_GL_Data_Biomass_Updated_2017_2018.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2018) %>%
+  filter(Frame==1)
+
+GL.Biomass.2019 <- drive_get("DOE_GL_Data_Biomass_Updated_2018_2019.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2019) %>%
+  filter(Frame %in% c(1,2))
+
+GL.Biomass.2020 <- drive_get("DOE_GL_Data_Biomass_Updated_2020_2021.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID=Plot.ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2020,Per.Live=NA) %>%
+  mutate(Per.Litter = as.numeric(str_remove_all(Per.Litter,"<"))) %>%
+  mutate(LitterMass = str_replace_na(LitterMass,0))
+
+GL.Biomass <- rbind(GL.Biomass.2007,GL.Biomass.2008,GL.Biomass.2009,GL.Biomass.2010,GL.Biomass.2011,GL.Biomass.2012,
+                    GL.Biomass.2013,GL.Biomass.2014,GL.Biomass.2015,GL.Biomass.2016,GL.Biomass.2017,GL.Biomass.2018,
+                    GL.Biomass.2019,GL.Biomass.2020)
+
+
+CSS.Biomass.2009 <- drive_get("DOE_LRS_Data_Biomass_Updated_2008_2009.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2009)
+
+CSS.Biomass.2010 <- drive_get("DOE_LRS_Data_Biomass_Updated_2009_2010.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2010)
+
+CSS.Biomass.2011 <- drive_get("DOE_LRS_Data_Biomass_Updated_2010_2011.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2011)
+
+CSS.Biomass.2012 <- drive_get("DOE_LRS_Data_Biomass_Updated_2011_2012.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2012)
+
+CSS.Biomass.2013 <- drive_get("DOE_LRS_Data_Biomass_Updated_2012_2013.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2013)
+
+CSS.Biomass.2014 <- drive_get("DOE_LRS_Data_Biomass_Updated_2013_2014.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2014)
+
+CSS.Biomass.2015 <- drive_get("DOE_LRS_Data_Biomass_Updated_2014_2015.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2015)
+
+CSS.Biomass.2016 <- drive_get("DOE_LRS_Data_Biomass_Updated_2015_2016.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2016)
+
+CSS.Biomass.2017 <- drive_get("DOE_LRS_Data_Biomass_Updated_2016_2017.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  filter(Frame==1) %>%
+  mutate(Year=2017)
+
+CSS.Biomass.2018 <- drive_get("DOE_LRS_Data_Biomass_Updated_2017_2018.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,Biomass,LitterMass,Area=Area.m2) %>%
+  filter(Frame==1) %>%
+  mutate(Year=2018)
+
+# Missing 2019
+
+CSS.Biomass.2020 <- drive_get("DOE_LRS_Data_Biomass_Updated_2019_2020.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Per.Live=NA,Year=2020) %>%
+  mutate(Biomass=as.numeric(Biomass)) # coerce "missing" into NA
+
+CSS.Biomass.2021 <- drive_get("DOE_LRS_Data_Biomass_Updated_2020_2021.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID=Plot.ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Per.Live=NA,Year=2021) %>%
+  mutate(Biomass = as.numeric(str_remove_all(Biomass,"<")))
+
+CSS.Biomass <- rbind(CSS.Biomass.2009,CSS.Biomass.2010,CSS.Biomass.2011,CSS.Biomass.2012,CSS.Biomass.2013,CSS.Biomass.2014,
+                     CSS.Biomass.2015,CSS.Biomass.2016,CSS.Biomass.2017,CSS.Biomass.2018,CSS.Biomass.2020,CSS.Biomass.2021)
+
+Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
+  left_join(PlotTreatments)
 
 ## Resolved issues ##
 # G11RRX mislabeled as G11RXX in 2020, 2021
