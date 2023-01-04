@@ -4,7 +4,7 @@ library(tidyverse)
 library(vegan)
 library(readxl)
 
-# Read in data from Google Drive; will be asked to authorize access
+# Read in data from Google Drive (will be asked to authorize access)
 # Need to specify shared drive to avoid accessing local duplicates
 # Some csv files are in standard UTF-8 but others are Windows encoded
 GL.2009 <- drive_get("DOE_LRG_Updated_SppComp_2009.csv", shared_drive = "Microbes and Global Change") %>%
