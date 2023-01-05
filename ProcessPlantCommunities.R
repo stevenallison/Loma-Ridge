@@ -207,6 +207,10 @@ PlotTreatments <- drive_get("PlotTreatments.csv", shared_drive = "Microbes and G
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) 
 
+PlotTreatments2007 <- drive_get("PlotTreatments2007.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) 
+
 # Combine the GL and CSS vegetation data
 # Add plot information and average across subplots
 veg <- (rbind(GL.long,CSS.long)) %>%
@@ -511,7 +515,7 @@ CSS.Biomass <- rbind(CSS.Biomass.2009,CSS.Biomass.2010,CSS.Biomass.2011,CSS.Biom
                      CSS.Biomass.2015,CSS.Biomass.2016,CSS.Biomass.2017,CSS.Biomass.2018,CSS.Biomass.2020,CSS.Biomass.2021)
 
 Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
-  left_join(PlotTreatments)
+  left_join(rbind(PlotTreatments,PlotTreatments2007)) # Some plot IDs appear to have been different in 2007
 
 ## Resolved issues ##
 # G11RRX mislabeled as G11RXX in 2020, 2021
