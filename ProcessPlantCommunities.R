@@ -425,7 +425,6 @@ GL.Biomass.2020 <- drive_get("DOE_GL_Data_Biomass_Updated_2020_2021.csv", shared
   read.csv(text=.) %>%
   select(Plot_ID=Plot.ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
   mutate(Year=2020,Per.Live=NA) %>%
-  mutate(Per.Litter = as.numeric(str_remove_all(Per.Litter,"<"))) %>%
   mutate(LitterMass = str_replace_na(LitterMass,0))
 
 GL.Biomass <- rbind(GL.Biomass.2007,GL.Biomass.2008,GL.Biomass.2009,GL.Biomass.2010,GL.Biomass.2011,GL.Biomass.2012,
@@ -509,13 +508,15 @@ CSS.Biomass.2021 <- drive_get("DOE_LRS_Data_Biomass_Updated_2020_2021.csv", shar
   read.csv(text=.) %>%
   select(Plot_ID=Plot.ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
   mutate(Per.Live=NA,Year=2021) %>%
-  mutate(Biomass = as.numeric(str_remove_all(Biomass,"<")))
+  mutate(LitterMass = str_replace_na(LitterMass,0))
 
 CSS.Biomass <- rbind(CSS.Biomass.2009,CSS.Biomass.2010,CSS.Biomass.2011,CSS.Biomass.2012,CSS.Biomass.2013,CSS.Biomass.2014,
                      CSS.Biomass.2015,CSS.Biomass.2016,CSS.Biomass.2017,CSS.Biomass.2018,CSS.Biomass.2020,CSS.Biomass.2021)
 
 Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
-  left_join(rbind(PlotTreatments,PlotTreatments2007)) # Some plot IDs appear to have been different in 2007
+  left_join(rbind(PlotTreatments,PlotTreatments2007)) %>% # Some plot IDs appear to have been different in 2007
+  mutate(across(everything(),~str_remove(.,"<"))) %>%
+  mutate(across(c(Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,LitterMass),as.numeric))
 
 ## Resolved issues ##
 # G11RRX mislabeled as G11RXX in 2020, 2021
@@ -531,3 +532,5 @@ Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
 # 2020 CSS data is missing S48RXN
 # Need the 2022 data
 # Looks like starting in 2020, CSS data collection involved a separate ground cover estimation that adds up to 100%
+# Suggest to not use "<" symbols in numeric data columns
+# Suggest not to leave zero values as missing, or to be consistent
