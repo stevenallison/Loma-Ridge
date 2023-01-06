@@ -273,7 +273,7 @@ veg.metrics <- native.cover %>%
   select(-`Bare ground Bare ground`,-`Litter Litter`)
 
 # compute means and standard errors for all plot level metrics by ecosystem, year, and treatment
-std.error <- function(x) sd(x)/sqrt(length(x))
+std.error <- function(x,na.rm=T) sd(x,na.rm)/sqrt(sum(!is.na(x)))
 veg.means <- ungroup(veg.metrics) %>%
   filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
   select(-Treated_2015_2020,-Plot_ID) %>%
@@ -341,7 +341,7 @@ GL.Biomass.2007 <- drive_get("DOE_GL_Data_Biomass_Updated_2006_2007.csv", shared
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>%
   select(Plot_ID,Biomass,Area=Area.m2) %>%
-  mutate(Year=2007,Frame=NA,Per.Grass=NA,Per.Forb=NA,Per.Bare=NA,Per.Litter=NA,Per.Live=NA,LitterMass=NA) %>%
+  mutate(Year=2007,Frame=1,Per.Grass=NA,Per.Forb=NA,Per.Bare=NA,Per.Litter=NA,Per.Live=NA,LitterMass=NA) %>%
   mutate(Plot_ID = str_replace(Plot_ID,"GR([1-9])([LR])","G0\\1\\2")) %>%
   mutate(Plot_ID = str_replace(Plot_ID,"GR","G"))
 
@@ -420,16 +420,22 @@ GL.Biomass.2019 <- drive_get("DOE_GL_Data_Biomass_Updated_2018_2019.csv", shared
   mutate(Year=2019) %>%
   filter(Frame %in% c(1,2))
 
-GL.Biomass.2020 <- drive_get("DOE_GL_Data_Biomass_Updated_2020_2021.csv", shared_drive = "Microbes and Global Change") %>%
+GL.Biomass.2020 <- drive_get("DOE_GL_Data_Biomass_Updated_2019_2020.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID=PlotID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
+  mutate(Year=2020,Per.Live=NA)
+
+GL.Biomass.2021 <- drive_get("DOE_GL_Data_Biomass_Updated_2020_2021.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>%
   select(Plot_ID=Plot.ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
-  mutate(Year=2020,Per.Live=NA) %>%
+  mutate(Year=2021,Per.Live=NA) %>%
   mutate(LitterMass = str_replace_na(LitterMass,0))
 
 GL.Biomass <- rbind(GL.Biomass.2007,GL.Biomass.2008,GL.Biomass.2009,GL.Biomass.2010,GL.Biomass.2011,GL.Biomass.2012,
                     GL.Biomass.2013,GL.Biomass.2014,GL.Biomass.2015,GL.Biomass.2016,GL.Biomass.2017,GL.Biomass.2018,
-                    GL.Biomass.2019,GL.Biomass.2020)
+                    GL.Biomass.2019,GL.Biomass.2020,GL.Biomass.2021)
 
 
 CSS.Biomass.2009 <- drive_get("DOE_LRS_Data_Biomass_Updated_2008_2009.csv", shared_drive = "Microbes and Global Change") %>%
@@ -501,7 +507,7 @@ CSS.Biomass.2020 <- drive_get("DOE_LRS_Data_Biomass_Updated_2019_2020.csv", shar
   read.csv(text=.) %>%
   select(Plot_ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass,Area=Area.m2) %>%
   mutate(Per.Live=NA,Year=2020) %>%
-  mutate(Biomass=as.numeric(Biomass)) # coerce "missing" into NA
+  mutate(Biomass = as.numeric(str_replace(Biomass,"missing","0"))) # change "missing" into 0
 
 CSS.Biomass.2021 <- drive_get("DOE_LRS_Data_Biomass_Updated_2020_2021.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
@@ -514,9 +520,47 @@ CSS.Biomass <- rbind(CSS.Biomass.2009,CSS.Biomass.2010,CSS.Biomass.2011,CSS.Biom
                      CSS.Biomass.2015,CSS.Biomass.2016,CSS.Biomass.2017,CSS.Biomass.2018,CSS.Biomass.2020,CSS.Biomass.2021)
 
 Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
-  left_join(rbind(PlotTreatments,PlotTreatments2007)) %>% # Some plot IDs appear to have been different in 2007
   mutate(across(everything(),~str_remove(.,"<"))) %>%
-  mutate(across(c(Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,LitterMass),as.numeric))
+  mutate(across(c(Year,Biomass,Area,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,LitterMass),as.numeric)) %>%
+  mutate(Biomass.per.area = Biomass/Area) %>%
+  mutate(Litter.per.area = LitterMass/Area) %>%
+  left_join(rbind(PlotTreatments,PlotTreatments2007)) # Some plot IDs appear to have been different in 2007
+
+Biomass.means <- Biomass %>%
+  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
+  select(-Treated_2015_2020,-Frame) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Plot_ID) %>%
+  summarize(across(everything(),mean,na.rm=T)) %>%
+  select(-Plot_ID,-LitterMass,-Biomass,-Area) %>%
+  summarize(across(everything(),list(mean = mean, se = std.error),na.rm=T))
+
+
+# Plot native cover in CSS
+pdf("Graphics/Biomass.pdf",width = 8,height = 6)
+ggplot(Biomass.means, aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
+                      group = Water, linetype = Water, shape = Water)) + 
+  geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Biomass (g/m^2)") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position=c(0.3,0.85), 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Nitrogen~Ecosystem)
+dev.off()
 
 ## Resolved issues ##
 # G11RRX mislabeled as G11RXX in 2020, 2021
@@ -533,4 +577,4 @@ Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
 # Need the 2022 data
 # Looks like starting in 2020, CSS data collection involved a separate ground cover estimation that adds up to 100%
 # Suggest to not use "<" symbols in numeric data columns
-# Suggest not to leave zero values as missing, or to be consistent
+# Suggest not to leave zero values as blank, "missing", or NA; be consistent
