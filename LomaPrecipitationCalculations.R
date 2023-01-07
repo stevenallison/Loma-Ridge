@@ -30,20 +30,18 @@ library(dplyr)
 # Create a list with all "CleanRaw" files which are use to create a dataframe
 # Every single files that you want to determine daily precipitation needs to
 # have "CleanRaw" to be added to this data frame
-Files <- drive_get("RawData", shared_drive = "Microbes and Global Change") %>%
+filenames <- drive_get("RawData", shared_drive = "Microbes and Global Change") %>%
   drive_ls(pattern = "CleanRaw")
 
-  walk(drive_read_string(Files$id[1],encoding="UTF-8"))
+AllPrecip.raw <- NULL
+for(i in filenames$name) {
+  AllPrecip.raw <- drive_get(i, shared_drive = "Microbes and Global Change") %>%
+    drive_read_string(encoding="UTF-8") %>%
+    read.csv(text=.) %>%
+    rbind(AllPrecip.raw)
+}
 
-
-AllPrecip <- list.files(path = "RawData", pattern = "CleanRaw",ignore.case = TRUE, full.names = T) %>%
-  map_df(~read_csv(., col_types = cols(.default = "c"))) %>%
-  filter(Precipitation>0) %>% # keep non-zero measurements
-  mutate(Day = as.Date(Day,format="%m/%d/%Y")) %>%
-  arrange(Day)
-
-AllPrecip <- list.files(path = "RawData", pattern = "CleanRaw",ignore.case = TRUE, full.names = T) %>%
-  map_df(~read_csv(., col_types = cols(.default = "c"))) %>%
+AllPrecip <- AllPrecip.raw %>%
   filter(Precipitation>0) %>% # keep non-zero measurements
   mutate(Day = as.Date(Day,format="%m/%d/%Y")) %>%
   arrange(Day)
