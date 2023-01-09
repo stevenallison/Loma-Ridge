@@ -72,7 +72,9 @@ DailyPrecip <- AllPrecip %>%
 # We also need to create a column called Reduced to add 0 as precipitation.
 # Join Closures object with DailyPrecip object
 # Note: This object will have new dates that correspond to Closures
-AmbientReduced <- read.csv("RawData/ShelterClosureDates.csv") %>%
+AmbientReduced <- drive_get("ShelterClosureDates.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
   select(c(ClosureStart,ClosureEnd)) %>%
   mutate(ClosureStart = as.Date(ClosureStart,format="%m/%d/%Y")) %>% #format day
   mutate(ClosureEnd = as.Date(ClosureEnd,format="%m/%d/%Y"))%>% #format day
@@ -95,8 +97,9 @@ AmbientReduced <- read.csv("RawData/ShelterClosureDates.csv") %>%
 # Join with ReducedAmbient object
 # This will create dates that were not included in ReducedAmbient
 
-FullPrecipLoma <-read.csv("RawData/WaterAdditionDates.csv") %>%
-  mutate(Date_Added = as.Date(Date_Added,format="%m/%d/%Y")) %>%
+FullPrecipLoma <- drive_get("WaterAdditionDates.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%mutate(Date_Added = as.Date(Date_Added,format="%m/%d/%Y")) %>%
   rename(Day = Date_Added) %>%
   select(Day, Water_Added) %>%
   full_join(AmbientReduced, by="Day") %>%
@@ -114,9 +117,9 @@ FullPrecipLoma <-read.csv("RawData/WaterAdditionDates.csv") %>%
 
 ## Run the one line of code below to save created FullPrecipLoma file
 ## This object has Precipitation, Drought and Watering
-write.table(FullPrecipLoma,"OfficialRecords/FullPrecipLoma.csv",quote=F,row.names=F,sep=",",na="") # save daily table
+write.table(FullPrecipLoma,"Outputs/FullPrecipLoma.csv",quote=F,row.names=F,sep=",",na="") # save daily table
 
 ## Run the one line of code below to save created daily precipitation file
 ## Only daily precipitation values. 
-write.table(DailyPrecip,"OfficialRecords/DailyAmbientPrecipLoma.csv",quote=F,row.names=F,sep=",",na="") # save daily table
+write.table(DailyPrecip,"Outputs/DailyAmbientPrecipLoma.csv",quote=F,row.names=F,sep=",",na="") # save daily table
 
