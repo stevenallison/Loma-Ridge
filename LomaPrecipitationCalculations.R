@@ -99,7 +99,8 @@ AmbientReduced <- drive_get("ShelterClosureDates.csv", shared_drive = "Microbes 
 
 FullPrecipLoma <- drive_get("WaterAdditionDates.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
-  read.csv(text=.) %>%mutate(Date_Added = as.Date(Date_Added,format="%m/%d/%Y")) %>%
+  read.csv(text=.) %>%
+  mutate(Date_Added = as.Date(Date_Added,format="%m/%d/%Y")) %>%
   rename(Day = Date_Added) %>%
   select(Day, Water_Added) %>%
   full_join(AmbientReduced, by="Day") %>%
