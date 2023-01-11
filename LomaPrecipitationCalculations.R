@@ -6,6 +6,7 @@
 ################################################################################
 
 ## Call your downloaded packages
+library(googledrive)
 library(tidyr)
 library(purrr)
 library(readr)
@@ -112,15 +113,24 @@ FullPrecipLoma <- drive_get("WaterAdditionDates.csv", shared_drive = "Microbes a
   mutate(Units = "mm") %>% #Recreate Units column
   select(Day, Reduced, Ambient, Added, Units, Source1, Source2)
 
+AnnualSums <- FullPrecipLoma %>%
+  mutate(Year = as.numeric(format(Day,"%Y"))) %>%
+  mutate(Month = as.numeric(format(Day,"%m"))) %>%
+  mutate(WaterYear = ifelse(Month %in% 1:9,Year,Year+1)) %>%
+  group_by(WaterYear) %>%
+  summarize_at(vars(Ambient,Reduced,Added), sum)
+
+
 ###############################################################################
-## Save the two files that you created above
+## Save the output datasets
 ###############################################################################
 
-## Run the one line of code below to save created FullPrecipLoma file
-## This object has Precipitation, Drought and Watering
-write.table(FullPrecipLoma,"Outputs/FullPrecipLoma.csv",quote=F,row.names=F,sep=",",na="") # save daily table
+## This object has reduced, ambient, and added precipitation treatments
+write.table(FullPrecipLoma,"Outputs/FullPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
 
-## Run the one line of code below to save created daily precipitation file
-## Only daily precipitation values. 
-write.table(DailyPrecip,"Outputs/DailyAmbientPrecipLoma.csv",quote=F,row.names=F,sep=",",na="") # save daily table
+## Record of days with ambient precipitation
+write.table(DailyPrecip,"Outputs/DailyAmbientPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
+
+## Annual sums from precipitation treatments
+write.table(AnnualSums,"Outputs/AnnualPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
 
