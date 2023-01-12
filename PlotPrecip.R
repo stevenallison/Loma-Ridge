@@ -5,7 +5,7 @@ library(googledrive)
 
 # Water year is defined by the January of that wet season
 # E.g. Water Year 2020 goes from 2019-10-01 to 2020-09-30
-PrecipRecord <- drive_get("FullPrecipLomaHicks.csv", shared_drive = "Microbes and Global Change") %>%
+PrecipRecord <- drive_get("FullPrecipLoma.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>%
   mutate(Day = as.Date(Day,tryFormats=c("%Y-%m-%d","%m/%d/%Y"))) %>%
@@ -43,9 +43,9 @@ xlim <- as.Date(c("2020-10-01","2021-09-30"))
 pdf("Outputs/LomaPrecipWaterYear2020.pdf",height=6,width=6)
 par(cex.axis=1.5,cex.lab=2,font.lab=2,lwd=1.5,tcl=0.4,las=1,mgp=c(3,0.5,0),mar=c(3,5,2,2)+0.1)
 plot(x=PrecipRecordset$Day,y=PrecipRecordset$Added,xlim=xlim,ylab="Water input (mm)",xlab=NA,type="n")
-arrows(PrecipRecord$Day,0,PrecipRecord$Day,PrecipRecord$Added,length=0,angle=90,code=2,lwd=0.5,col="cyan")
-arrows(PrecipRecord$Day,0,PrecipRecord$Day,PrecipRecord$Ambient,length=0,angle=90,code=2,lwd=0.5,col="red")
-arrows(PrecipRecord$Day,0,PrecipRecord$Day,PrecipRecord$Reduced,length=0,angle=90,code=2,lwd=0.5)
+arrows(PrecipRecordset$Day,0,PrecipRecordset$Day,PrecipRecordset$Added,length=0,angle=90,code=2,lwd=0.5,col="cyan")
+arrows(PrecipRecordset$Day,0,PrecipRecordset$Day,PrecipRecordset$Ambient,length=0,angle=90,code=2,lwd=0.5,col="red")
+arrows(PrecipRecordset$Day,0,PrecipRecordset$Day,PrecipRecordset$Reduced,length=0,angle=90,code=2,lwd=0.5)
 legend("topright",c("Ambient","Excluded","Added"),lty=1,col=c("black","red","cyan"),cex=1.5)
 dev.off()
 
