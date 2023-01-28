@@ -1,14 +1,17 @@
 ## Load packages
 library(googledrive)
 library(tidyverse)
-library(vegan)
 library(readxl)
 
 # Read in data from Google Drive (will be asked to authorize access)
 # Need to specify shared drive to avoid accessing local duplicates
-# Some csv files are in standard UTF-8 but others are Windows encoded
+# Most csv files are in standard UTF-8 but others may be Windows encoded
 
-# Species composition
+#####################################
+# Species composition data processing
+#####################################
+
+# Retrieve raw data from shared Google Drive: grassland
 GL.2009 <- drive_get("DOE_LRG_Updated_SppComp_2009.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.)
@@ -59,60 +62,7 @@ GL.2021 <- drive_get("DOE_LRG_Updated_SppComp_2021.csv", shared_drive = "Microbe
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) 
 
-
-GL.2009.long <- GL.2009 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2010.long <- GL.2010 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2011.long <- GL.2011 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2012.long <- GL.2012 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2013.long <- GL.2013 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2014.long <- GL.2014 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2015.long <- GL.2015 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2016.long <- GL.2016 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2018.long <- GL.2018 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2019.long <- GL.2019 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2020.long <- GL.2020 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.2021.long <- GL.2021 %>%
-  pivot_longer(names_to = "Species.Code", values_to = "Hits",
-               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
-
-GL.long <- rbind(GL.2009.long,GL.2010.long,GL.2011.long,GL.2012.long,GL.2013.long,GL.2014.long,
-                 GL.2015.long,GL.2016.long,GL.2018.long,GL.2019.long,GL.2020.long,GL.2021.long) %>%
-  mutate(Cover = Hits*100/102)
-
-
+# Retrieve raw data from shared Google Drive: CSS
 CSS.2009 <- drive_get("DOE_LRS_Updated_SppComp_2009.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.)
@@ -165,7 +115,61 @@ CSS.2021 <- read_excel("CSS.2021.xlsx",sheet="Species Comp Data") %>%
   mutate(Plot_ID = str_remove_all(Plot_ID,"_")) %>%
   mutate(Cover = as.numeric(str_remove_all(Cover,"<")))
 
+# Reformat data to long table: grassland
+GL.2009.long <- GL.2009 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
+GL.2010.long <- GL.2010 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2011.long <- GL.2011 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2012.long <- GL.2012 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2013.long <- GL.2013 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2014.long <- GL.2014 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2015.long <- GL.2015 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2016.long <- GL.2016 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2018.long <- GL.2018 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2019.long <- GL.2019 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2020.long <- GL.2020 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+GL.2021.long <- GL.2021 %>%
+  pivot_longer(names_to = "Species.Code", values_to = "Hits",
+               cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
+
+# Merge grassland datasets across years
+GL.long <- rbind(GL.2009.long,GL.2010.long,GL.2011.long,GL.2012.long,GL.2013.long,GL.2014.long,
+                 GL.2015.long,GL.2016.long,GL.2018.long,GL.2019.long,GL.2020.long,GL.2021.long) %>%
+  mutate(Cover = Hits*100/102) # Adjust cover to total number of point intercepts
+
+# Reformat data to long table: CSS
 CSS.2009.long <- CSS.2009 %>%
   pivot_longer(names_to = "Species.Code", values_to = "Hits",
                cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
@@ -198,6 +202,7 @@ CSS.2018.long <- CSS.2018 %>%
   pivot_longer(names_to = "Species.Code", values_to = "Hits",
                cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
+# Merge CSS datasets across years
 CSS.long <- rbind(CSS.2009.long,CSS.2010.long,CSS.2011.long,CSS.2012.long,CSS.2013.long,CSS.2014.long,
                  CSS.2015.long,CSS.2018.long) %>%
   mutate(Cover = Hits)
@@ -207,6 +212,7 @@ PlotTreatments <- drive_get("PlotTreatments.csv", shared_drive = "Microbes and G
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) 
 
+# Different IDs used in first year of experiment
 PlotTreatments2007 <- drive_get("PlotTreatments2007.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) 
@@ -236,107 +242,13 @@ setdiff(Updated.species,Species.list$Species.Code)
 veg.species <- veg %>%
   left_join(Species.list)
 
-# compute cover for native/non-native by plot
-native.cover <- veg.species %>%
-  filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
-  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Non.Native) %>%
-  summarize(Native.Cover = sum(Cover)) %>%
-  pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover)
-
-# compute cover for functional groups by plot
-functional.cover <- veg.species %>%
-  filter(!Functional.Group %in% c("Stem","Unknown")) %>%
-  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Functional.Group) %>%
-  summarize(Funct.Cover = sum(Cover)) %>%
-  pivot_wider(names_from = Functional.Group, values_from = Funct.Cover)
-
-# compute cover for native/non-native and functional group by plot
-native.functional.cover <- veg.species %>%
-  filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
-  mutate(Native.Functional = interaction(Native.Non.Native,Functional.Group,sep = " ")) %>%
-  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Functional) %>%
-  summarize(Native.Funct.Cover = sum(Cover)) %>%
-  pivot_wider(names_from = Native.Functional, values_from = Native.Funct.Cover)
-
-# compute diversity indices by plot
-veg.diversity <- veg.species %>%
-  filter(!Native.Non.Native %in% c("Stem","Unknown","Litter","Bare ground")) %>%
-  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID) %>%
-  summarize(Richness = specnumber(Cover), Shannon.diversity = diversity(Cover), Simpson.diversity = diversity(Cover, "simpson")) %>%
-  mutate(Evenness = Shannon.diversity/log(Richness))
-
-# merge all plot level metrics
-veg.metrics <- native.cover %>%
-  left_join(functional.cover) %>%
-  left_join(native.functional.cover) %>%
-  left_join(veg.diversity) %>%
-  select(-`Bare ground Bare ground`,-`Litter Litter`)
-
-# compute means and standard errors for all plot level metrics by ecosystem, year, and treatment
-std.error <- function(x,na.rm=T) sd(x,na.rm)/sqrt(sum(!is.na(x)))
-veg.means <- ungroup(veg.metrics) %>%
-  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
-  select(-Treated_2015_2020,-Plot_ID) %>%
-  group_by(Ecosystem,Year,Water,Nitrogen) %>%
-  summarize(across(everything(),list(mean = mean, se = std.error)))
-
-# Plot native cover in CSS
-pdf("Graphics/NativeCover.pdf",width = 8,height = 6)
-ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water, 
-              group = Water, linetype = Water, shape = Water)) + 
-  geom_errorbar(aes(ymin=(Native_mean-Native_se), ymax=(Native_mean+Native_se)), width=.1, lty=1, show.legend = F) +
-  geom_line() +
-  geom_point(size = 2) +
-  labs(color = "Water",
-       linetype = "Water",
-       shape = "Water",
-       y = "Native cover (%)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
-  theme_bw(base_size=16) +
-  theme(plot.title = element_text(hjust=0, size=18),
-        axis.text.y=element_text(size=14),
-        axis.text.x=element_text(size=14),
-        axis.title.y=element_text(size=18),
-        axis.title.x=element_text(size=18),
-        legend.position=c(0.8,0.8), 
-        legend.title = element_text(size=14),
-        legend.key.width= unit(1.5, 'cm'),
-        legend.text = element_text(size=12),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
-dev.off()
-
-# Plot native shrub cover in CSS
-pdf("Graphics/NativeShrubCover.pdf",width = 8,height = 6)
-ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water, 
-                      group = Water, linetype = Water, shape = Water)) + 
-  geom_errorbar(aes(ymin=(`Native Shrub_mean`-`Native Shrub_se`), ymax=(`Native Shrub_mean`+`Native Shrub_se`)), width=.1, lty=1, show.legend = F) +
-  geom_line() +
-  geom_point(size = 2) +
-  labs(color = "Water",
-       linetype = "Water",
-       shape = "Water",
-       y = "Native shrub cover (%)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
-  theme_bw(base_size=16) +
-  theme(plot.title = element_text(hjust=0, size=18),
-        axis.text.y=element_text(size=14),
-        axis.text.x=element_text(size=14),
-        axis.title.y=element_text(size=18),
-        axis.title.x=element_text(size=18),
-        legend.position=c(0.8,0.8), 
-        legend.title = element_text(size=14),
-        legend.key.width= unit(1.5, 'cm'),
-        legend.text = element_text(size=12),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
-dev.off()
 
 
+#####################################
+# Biomass data processing
+#####################################
 
-# Biomass
+# Retrieve raw data by year from shared Google Drive
 GL.Biomass.2007 <- drive_get("DOE_GL_Data_Biomass_Updated_2006_2007.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>%
@@ -433,10 +345,6 @@ GL.Biomass.2021 <- drive_get("DOE_GL_Data_Biomass_Updated_2020_2021.csv", shared
   mutate(Year=2021,Per.Live=NA) %>%
   mutate(LitterMass = str_replace_na(LitterMass,0))
 
-GL.Biomass <- rbind(GL.Biomass.2007,GL.Biomass.2008,GL.Biomass.2009,GL.Biomass.2010,GL.Biomass.2011,GL.Biomass.2012,
-                    GL.Biomass.2013,GL.Biomass.2014,GL.Biomass.2015,GL.Biomass.2016,GL.Biomass.2017,GL.Biomass.2018,
-                    GL.Biomass.2019,GL.Biomass.2020,GL.Biomass.2021)
-
 
 CSS.Biomass.2009 <- drive_get("DOE_LRS_Data_Biomass_Updated_2008_2009.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
@@ -516,9 +424,15 @@ CSS.Biomass.2021 <- drive_get("DOE_LRS_Data_Biomass_Updated_2020_2021.csv", shar
   mutate(Per.Live=NA,Year=2021) %>%
   mutate(LitterMass = str_replace_na(LitterMass,0))
 
+# Merge biomass data across years
+GL.Biomass <- rbind(GL.Biomass.2007,GL.Biomass.2008,GL.Biomass.2009,GL.Biomass.2010,GL.Biomass.2011,GL.Biomass.2012,
+                    GL.Biomass.2013,GL.Biomass.2014,GL.Biomass.2015,GL.Biomass.2016,GL.Biomass.2017,GL.Biomass.2018,
+                    GL.Biomass.2019,GL.Biomass.2020,GL.Biomass.2021)
+
 CSS.Biomass <- rbind(CSS.Biomass.2009,CSS.Biomass.2010,CSS.Biomass.2011,CSS.Biomass.2012,CSS.Biomass.2013,CSS.Biomass.2014,
                      CSS.Biomass.2015,CSS.Biomass.2016,CSS.Biomass.2017,CSS.Biomass.2018,CSS.Biomass.2020,CSS.Biomass.2021)
 
+# Combine grassland and CSS datasets, merge with plot data, and tidy dataframe
 Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
   mutate(across(everything(),~str_remove(.,"<"))) %>%
   mutate(across(c(Year,Biomass,Area,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Per.Live,LitterMass),as.numeric)) %>%
@@ -526,75 +440,9 @@ Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
   mutate(Litter.per.area = LitterMass/Area) %>%
   left_join(rbind(PlotTreatments,PlotTreatments2007)) # Some plot IDs appear to have been different in 2007
 
-Annual.precip <- drive_get("AnnualPrecipLoma.csv", shared_drive = "Microbes and Global Change") %>%
-  drive_read_string(encoding="UTF-8") %>%
-  read.csv(text=.) %>%
-  rename(Year=WaterYear) %>%
-  pivot_longer(cols = !Year, names_to = "Water", values_to = "Water.input")
-
-Biomass.means <- Biomass %>%
-  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
-  select(-Treated_2015_2020,-Frame) %>%
-  group_by(Ecosystem,Year,Water,Nitrogen,Plot_ID) %>%
-  summarize(across(everything(),mean,na.rm=T)) %>%
-  select(-Plot_ID,-LitterMass,-Biomass,-Area) %>%
-  summarize(across(everything(),list(mean = mean, se = std.error),na.rm=T)) %>%
-  left_join(Annual.precip)
-
-
-# Plot biomass
-pdf("Graphics/Biomass.pdf",width = 8,height = 6)
-ggplot(Biomass.means, aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
-                      group = Water, linetype = Water, shape = Water)) + 
-  geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
-  geom_line() +
-  geom_point(size = 2) +
-  labs(color = "Water",
-       linetype = "Water",
-       shape = "Water",
-       y = "Biomass (g/m^2)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
-  theme_bw(base_size=16) +
-  theme(plot.title = element_text(hjust=0, size=18),
-        axis.text.y=element_text(size=14),
-        axis.text.x=element_text(size=14),
-        axis.title.y=element_text(size=18),
-        axis.title.x=element_text(size=18),
-        legend.position=c(0.3,0.85), 
-        legend.title = element_text(size=14),
-        legend.key.width= unit(1.5, 'cm'),
-        legend.text = element_text(size=12),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
-dev.off()
-
-# Plot biomass versus water input
-pdf("Graphics/BiomassWater.pdf",width = 8,height = 6)
-ggplot(Biomass.means, aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
-                          group = Water, shape = Water, label = Year)) + 
-  geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
-  geom_point(size = 2) +
-  geom_text(size = 1,hjust=-0.25) +
-  labs(color = "Water",
-       shape = "Water",
-       y = "Biomass (g/m^2)",
-       x = "Water input (mm)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
-  theme_bw(base_size=16) +
-  theme(plot.title = element_text(hjust=0, size=18),
-        axis.text.y=element_text(size=14),
-        axis.text.x=element_text(size=14),
-        axis.title.y=element_text(size=18),
-        axis.title.x=element_text(size=18),
-        legend.position=c(0.9,0.87), 
-        legend.title = element_text(size=12),
-        legend.text = element_text(size=10),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
-dev.off()
-
+#####################################
+# Notes
+#####################################
 
 ## Resolved issues ##
 # G11RRX mislabeled as G11RXX in 2020, 2021

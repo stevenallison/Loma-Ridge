@@ -1,0 +1,177 @@
+
+library(googledrive)
+library(tidyverse)
+library(vegan)
+
+veg.species <- read.csv("veg.communities.csv")
+
+# compute cover for native/non-native by plot
+native.cover <- veg.species %>%
+  filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Non.Native) %>%
+  summarize(Native.Cover = sum(Cover)) %>%
+  pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover)
+
+# compute cover for functional groups by plot
+functional.cover <- veg.species %>%
+  filter(!Functional.Group %in% c("Stem","Unknown")) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Functional.Group) %>%
+  summarize(Funct.Cover = sum(Cover)) %>%
+  pivot_wider(names_from = Functional.Group, values_from = Funct.Cover)
+
+# compute cover for native/non-native and functional group by plot
+native.functional.cover <- veg.species %>%
+  filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
+  mutate(Native.Functional = interaction(Native.Non.Native,Functional.Group,sep = " ")) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Functional) %>%
+  summarize(Native.Funct.Cover = sum(Cover)) %>%
+  pivot_wider(names_from = Native.Functional, values_from = Native.Funct.Cover)
+
+# compute diversity indices by plot
+veg.diversity <- veg.species %>%
+  filter(!Native.Non.Native %in% c("Stem","Unknown","Litter","Bare ground")) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID) %>%
+  summarize(Richness = specnumber(Cover), Shannon.diversity = diversity(Cover), Simpson.diversity = diversity(Cover, "simpson")) %>%
+  mutate(Evenness = Shannon.diversity/log(Richness))
+
+# merge all plot level metrics
+veg.metrics <- native.cover %>%
+  left_join(functional.cover) %>%
+  left_join(native.functional.cover) %>%
+  left_join(veg.diversity) %>%
+  select(-`Bare ground Bare ground`,-`Litter Litter`)
+
+# compute means and standard errors for all plot level metrics by ecosystem, year, and treatment
+std.error <- function(x,na.rm=T) sd(x,na.rm)/sqrt(sum(!is.na(x)))
+veg.means <- ungroup(veg.metrics) %>%
+  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
+  select(-Treated_2015_2020,-Plot_ID) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen) %>%
+  summarize(across(everything(),list(mean = mean, se = std.error)))
+
+# Plot native cover in CSS
+pdf("Graphics/NativeCover.pdf",width = 8,height = 6)
+ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water, 
+                      group = Water, linetype = Water, shape = Water)) + 
+  geom_errorbar(aes(ymin=(Native_mean-Native_se), ymax=(Native_mean+Native_se)), width=.1, lty=1, show.legend = F) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Native cover (%)") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position=c(0.8,0.8), 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Nitrogen~Ecosystem)
+dev.off()
+
+# Plot native shrub cover in CSS
+pdf("Graphics/NativeShrubCover.pdf",width = 8,height = 6)
+ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water, 
+                      group = Water, linetype = Water, shape = Water)) + 
+  geom_errorbar(aes(ymin=(`Native Shrub_mean`-`Native Shrub_se`), ymax=(`Native Shrub_mean`+`Native Shrub_se`)), width=.1, lty=1, show.legend = F) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Native shrub cover (%)") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position=c(0.8,0.8), 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Nitrogen~Ecosystem)
+dev.off()
+
+
+Biomass <- read.csv("veg.biomass.csv")
+
+Annual.precip <- drive_get("AnnualPrecipLoma.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  rename(Year=WaterYear) %>%
+  pivot_longer(cols = !Year, names_to = "Water", values_to = "Water.input")
+
+Biomass.means <- Biomass %>%
+  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
+  select(-Treated_2015_2020,-Frame) %>%
+  group_by(Ecosystem,Year,Water,Nitrogen,Plot_ID) %>%
+  summarize(across(everything(),mean,na.rm=T)) %>%
+  select(-Plot_ID,-LitterMass,-Biomass,-Area) %>%
+  summarize(across(everything(),list(mean = mean, se = std.error),na.rm=T)) %>%
+  left_join(Annual.precip)
+
+
+# Plot biomass
+pdf("Graphics/Biomass.pdf",width = 8,height = 6)
+ggplot(Biomass.means, aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
+                          group = Water, linetype = Water, shape = Water)) + 
+  geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Biomass (g/m^2)") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position=c(0.3,0.85), 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Nitrogen~Ecosystem)
+dev.off()
+
+# Plot biomass versus water input
+pdf("Graphics/BiomassWater.pdf",width = 8,height = 6)
+ggplot(Biomass.means, aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
+                          group = Water, shape = Water, label = Year)) + 
+  geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
+  geom_point(size = 2) +
+  geom_text(size = 1,hjust=-0.25) +
+  labs(color = "Water",
+       shape = "Water",
+       y = "Biomass (g/m^2)",
+       x = "Water input (mm)") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position=c(0.9,0.87), 
+        legend.title = element_text(size=12),
+        legend.text = element_text(size=10),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Nitrogen~Ecosystem)
+dev.off()
+
