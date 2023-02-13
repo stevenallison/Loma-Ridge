@@ -62,6 +62,10 @@ GL.2021 <- drive_get("DOE_LRG_Updated_SppComp_2021.csv", shared_drive = "Microbe
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) 
 
+GL.2022 <- drive_get("DOE_LRG_Updated_SppComp_2022.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) 
+
 # Retrieve raw data from shared Google Drive: CSS
 CSS.2009 <- drive_get("DOE_LRS_Updated_SppComp_2009.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
@@ -115,6 +119,10 @@ CSS.2021 <- read_excel("CSS.2021.xlsx",sheet="Species Comp Data") %>%
   mutate(Plot_ID = str_remove_all(Plot_ID,"_")) %>%
   mutate(Cover = as.numeric(str_remove_all(Cover,"<")))
 
+CSS.2022 <- drive_get("DOE_LRS_Updated_SppComp_2022.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.)
+
 # Reformat data to long table: grassland
 GL.2009.long <- GL.2009 %>%
   pivot_longer(names_to = "Species.Code", values_to = "Hits",
@@ -164,10 +172,20 @@ GL.2021.long <- GL.2021 %>%
   pivot_longer(names_to = "Species.Code", values_to = "Hits",
                cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
+GL.2022.long <- GL.2022 %>%
+  select(Plot_ID,Species.Code=Code,ground.cover) %>%
+  mutate(Species.Code = case_when(Species.Code == "0" ~ ground.cover, TRUE ~ Species.Code)) %>% # no-hit recorded as zero; convert to ground cover type
+  select(-ground.cover) %>%
+  group_by(Plot_ID,Species.Code) %>%
+  summarize(Hits=n()) %>% 
+  mutate(Year=2022,Subplot="P",Water_Treatment=NA,TreatedWater=NA,Nitrogen_Treatment=NA,TreatedNitrogen=NA) # add variables to be compatible with prior years
+
 # Merge grassland datasets across years
 GL.long <- rbind(GL.2009.long,GL.2010.long,GL.2011.long,GL.2012.long,GL.2013.long,GL.2014.long,
-                 GL.2015.long,GL.2016.long,GL.2018.long,GL.2019.long,GL.2020.long,GL.2021.long) %>%
+                 GL.2015.long,GL.2016.long,GL.2018.long,GL.2019.long,GL.2020.long,GL.2021.long,
+                 GL.2022.long) %>%
   mutate(Cover = Hits*100/102) # Adjust cover to total number of point intercepts
+
 
 # Reformat data to long table: CSS
 CSS.2009.long <- CSS.2009 %>%
@@ -202,10 +220,15 @@ CSS.2018.long <- CSS.2018 %>%
   pivot_longer(names_to = "Species.Code", values_to = "Hits",
                cols = !c(Year,Plot_ID,Subplot,Water_Treatment,TreatedWater,Nitrogen_Treatment,TreatedNitrogen))
 
+CSS.2022.long <- CSS.2022 %>%
+  select(Plot_ID,Species.Code=Code,Hits=Percent.Cover) %>%
+  mutate(Year=2022,Subplot="P",Water_Treatment=NA,TreatedWater=NA,Nitrogen_Treatment=NA,TreatedNitrogen=NA) # add variables to be compatible with prior years
+
 # Merge CSS datasets across years
 CSS.long <- rbind(CSS.2009.long,CSS.2010.long,CSS.2011.long,CSS.2012.long,CSS.2013.long,CSS.2014.long,
-                 CSS.2015.long,CSS.2018.long) %>%
+                 CSS.2015.long,CSS.2018.long,CSS.2022.long) %>%
   mutate(Cover = Hits)
+
 
 # Input key to plot IDs
 PlotTreatments <- drive_get("PlotTreatments.csv", shared_drive = "Microbes and Global Change") %>%
@@ -242,7 +265,7 @@ setdiff(Updated.species,Species.list$Species.Code)
 veg.species <- veg %>%
   left_join(Species.list)
 
-
+write_csv(veg.species,"veg.communities.csv")
 
 #####################################
 # Biomass data processing
@@ -345,6 +368,14 @@ GL.Biomass.2021 <- drive_get("DOE_GL_Data_Biomass_Updated_2020_2021.csv", shared
   mutate(Year=2021,Per.Live=NA) %>%
   mutate(LitterMass = str_replace_na(LitterMass,0))
 
+GL.Biomass.2022 <- drive_get("DOE_GL_Data_Biomass_Updated_2021_2022.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID=Plot.ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass=Litter.mass..g.,Area=Area.m2) %>%
+  filter(!is.na(Biomass)) %>%
+  mutate(Year=2022,Per.Live=NA) %>%
+  mutate(LitterMass = str_replace_na(LitterMass,0))
+
 
 CSS.Biomass.2009 <- drive_get("DOE_LRS_Data_Biomass_Updated_2008_2009.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
@@ -424,6 +455,14 @@ CSS.Biomass.2021 <- drive_get("DOE_LRS_Data_Biomass_Updated_2020_2021.csv", shar
   mutate(Per.Live=NA,Year=2021) %>%
   mutate(LitterMass = str_replace_na(LitterMass,0))
 
+CSS.Biomass.2022 <- drive_get("DOE_LRS_Data_Biomass_Updated_2021_2022.csv", shared_drive = "Microbes and Global Change") %>%
+  drive_read_string(encoding="UTF-8") %>%
+  read.csv(text=.) %>%
+  select(Plot_ID=Plot.ID,Frame,Per.Grass,Per.Forb,Per.Bare,Per.Litter,Biomass,LitterMass=Litter.mass..g.,Area=Area.m2) %>%
+  mutate(Per.Live=NA,Year=2022) %>%
+  filter(!is.na(Biomass)) %>%
+  mutate(LitterMass = str_replace_na(LitterMass,0))
+
 # Merge biomass data across years
 GL.Biomass <- rbind(GL.Biomass.2007,GL.Biomass.2008,GL.Biomass.2009,GL.Biomass.2010,GL.Biomass.2011,GL.Biomass.2012,
                     GL.Biomass.2013,GL.Biomass.2014,GL.Biomass.2015,GL.Biomass.2016,GL.Biomass.2017,GL.Biomass.2018,
@@ -439,6 +478,9 @@ Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
   mutate(Biomass.per.area = Biomass/Area) %>%
   mutate(Litter.per.area = LitterMass/Area) %>%
   left_join(rbind(PlotTreatments,PlotTreatments2007)) # Some plot IDs appear to have been different in 2007
+
+write_csv(Biomass,"veg.biomass.csv")
+
 
 #####################################
 # Notes
