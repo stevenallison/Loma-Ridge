@@ -16,14 +16,14 @@ native.cover <- veg.species %>%
   filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
   group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Non.Native) %>%
   summarize(Native.Cover = sum(Cover)) %>%
-  pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover)
+  pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover, values_fill = 0)
 
 # compute cover for functional groups by plot
 functional.cover <- veg.species %>%
   filter(!Functional.Group %in% c("Stem","Unknown")) %>%
   group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Functional.Group) %>%
   summarize(Funct.Cover = sum(Cover)) %>%
-  pivot_wider(names_from = Functional.Group, values_from = Funct.Cover)
+  pivot_wider(names_from = Functional.Group, values_from = Funct.Cover, values_fill = 0)
 
 # compute cover for native/non-native and functional group by plot
 native.functional.cover <- veg.species %>%
@@ -31,7 +31,7 @@ native.functional.cover <- veg.species %>%
   mutate(Native.Functional = interaction(Native.Non.Native,Functional.Group,sep = " ")) %>%
   group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Functional) %>%
   summarize(Native.Funct.Cover = sum(Cover)) %>%
-  pivot_wider(names_from = Native.Functional, values_from = Native.Funct.Cover)
+  pivot_wider(names_from = Native.Functional, values_from = Native.Funct.Cover, values_fill = 0)
 
 # compute diversity indices by plot
 veg.diversity <- veg.species %>%
@@ -50,10 +50,10 @@ veg.metrics <- native.cover %>%
 # compute means and standard errors for all plot level metrics by ecosystem, year, and treatment
 std.error <- function(x,na.rm=T) sd(x,na.rm)/sqrt(sum(!is.na(x)))
 veg.means <- ungroup(veg.metrics) %>%
-  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
+  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020,2021) & Treated_2015_2020 == 0)) %>%
   select(-Treated_2015_2020,-Plot_ID) %>%
   group_by(Ecosystem,Year,Water,Nitrogen) %>%
-  summarize(across(everything(),list(mean = mean, se = std.error))) %>%
+  summarize(across(everything(),list(mean = mean, se = std.error),na.rm=T)) %>%
   left_join(Annual.precip)
 
 # read in biomass dataset
@@ -61,7 +61,7 @@ Biomass <- read.csv("veg.biomass.csv")
 
 # compute biomass means and merge with precip inputs
 Biomass.means <- Biomass %>%
-  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020) & Treated_2015_2020 == 0)) %>%
+  filter(!(Year %in% c(2015,2016,2017,2018,2019,2020,2021) & Treated_2015_2020 == 0)) %>%
   select(-Treated_2015_2020,-Frame) %>%
   group_by(Ecosystem,Year,Water,Nitrogen,Plot_ID) %>%
   summarize(across(everything(),mean,na.rm=T)) %>%

@@ -178,6 +178,11 @@ GL.2022.long <- GL.2022 %>%
   select(-ground.cover) %>%
   group_by(Plot_ID,Species.Code) %>%
   summarize(Hits=n()) %>% 
+  mutate(Plot_ID = case_when(Plot_ID == "G02RXX" ~ "G02RAN",
+                             Plot_ID == "G15RXX" ~ "G15RRX",
+                             Plot_ID == "G20RRX" ~ "G20LRX",
+                             Plot_ID == "G22LXN" ~ "G22LXX",
+                             TRUE ~ Plot_ID)) %>%
   mutate(Year=2022,Subplot="P",Water_Treatment=NA,TreatedWater=NA,Nitrogen_Treatment=NA,TreatedNitrogen=NA) # add variables to be compatible with prior years
 
 # Merge grassland datasets across years
@@ -222,6 +227,12 @@ CSS.2018.long <- CSS.2018 %>%
 
 CSS.2022.long <- CSS.2022 %>%
   select(Plot_ID,Species.Code=Code,Hits=Percent.Cover) %>%
+  mutate(Plot_ID = case_when(Plot_ID == "S27LXX" ~ "S27LXN",
+                             Plot_ID == "S28RRN" ~ "S28RRX",
+                             Plot_ID == "S32RXN" ~ "S32RXX",
+                             Plot_ID == "S36RRN" ~ "S36RAN",
+                             Plot_ID == "S38RAX" ~ "S38RAN",
+                             TRUE ~ Plot_ID)) %>%
   mutate(Year=2022,Subplot="P",Water_Treatment=NA,TreatedWater=NA,Nitrogen_Treatment=NA,TreatedNitrogen=NA) # add variables to be compatible with prior years
 
 # Merge CSS datasets across years
@@ -239,6 +250,11 @@ PlotTreatments <- drive_get("PlotTreatments.csv", shared_drive = "Microbes and G
 PlotTreatments2007 <- drive_get("PlotTreatments2007.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) 
+
+# Code to check for errors in recording plot IDs
+Updated.Plots <- levels(factor(CSS.2022.long$Plot_ID))
+setdiff(Updated.Plots,PlotTreatments$Plot_ID)
+setdiff(PlotTreatments$Plot_ID,Updated.Plots)
 
 # Combine the GL and CSS vegetation data
 # Add plot information and average across subplots
@@ -466,10 +482,11 @@ CSS.Biomass.2022 <- drive_get("DOE_LRS_Data_Biomass_Updated_2021_2022.csv", shar
 # Merge biomass data across years
 GL.Biomass <- rbind(GL.Biomass.2007,GL.Biomass.2008,GL.Biomass.2009,GL.Biomass.2010,GL.Biomass.2011,GL.Biomass.2012,
                     GL.Biomass.2013,GL.Biomass.2014,GL.Biomass.2015,GL.Biomass.2016,GL.Biomass.2017,GL.Biomass.2018,
-                    GL.Biomass.2019,GL.Biomass.2020,GL.Biomass.2021)
+                    GL.Biomass.2019,GL.Biomass.2020,GL.Biomass.2021,GL.Biomass.2022)
 
 CSS.Biomass <- rbind(CSS.Biomass.2009,CSS.Biomass.2010,CSS.Biomass.2011,CSS.Biomass.2012,CSS.Biomass.2013,CSS.Biomass.2014,
-                     CSS.Biomass.2015,CSS.Biomass.2016,CSS.Biomass.2017,CSS.Biomass.2018,CSS.Biomass.2020,CSS.Biomass.2021)
+                     CSS.Biomass.2015,CSS.Biomass.2016,CSS.Biomass.2017,CSS.Biomass.2018,CSS.Biomass.2020,CSS.Biomass.2021,
+                     CSS.Biomass.2022)
 
 # Combine grassland and CSS datasets, merge with plot data, and tidy dataframe
 Biomass <- rbind(GL.Biomass,CSS.Biomass) %>%
@@ -498,7 +515,6 @@ write_csv(Biomass,"veg.biomass.csv")
 ## Unresolved issues ##
 # 2012 cover data match previous datasets but somewhat higher than Kimball et al 2014
 # 2020 CSS data is missing S48RXN
-# Need the 2022 data
 # Looks like starting in 2020, CSS data collection involved a separate ground cover estimation that adds up to 100%
 # Suggest to not use "<" symbols in numeric data columns
 # Suggest not to leave zero values as blank, "missing", or NA; be consistent
