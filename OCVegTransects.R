@@ -12,7 +12,7 @@ meta.species <- drive_get("SpeciesListOCVeg.csv", shared_drive = "Microbes and G
   select(Code, Nativity)
 
 #input the % cover data
-data <- drive_get("OC_TX_To2022_ReadyToAnalyze_Nov1.csv", shared_drive = "Microbes and Global Change") %>%
+data <- drive_get("OC_TX_To2022_ReadyToAnalyze_Feb3.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>% 
   filter(Passive_Restoration == "N") #filter out passive restoration transects prior to analysis
