@@ -46,20 +46,18 @@ data.sum <- data.percent.cover %>%
   ungroup()
 
 #subsetting css and gl for ltreb proposal
-ltreb.sum <- data.sum %>% filter(Veg_Comm != "CHAP")
+ltreb.sum <- data.sum %>% filter(Veg_Comm != "CHAP", Year != 2007)
 
 # LTREB Plots
 #replace meanNative and seNative with variables from ltreb.sum
 
-ltreb.sum %>% 
-  ggplot(aes(x = Year, 
-             y = Native_mean), group=Veg_Comm) +
-  geom_line(linetype="dashed", color='#00BA38') +
-  geom_point(size=2, color='#00BA38') +
-  facet_grid(.~Veg_Comm) +
-  geom_errorbar(aes(ymin = Native_mean-Native_se, 
-                    ymax = Native_mean+Native_se),
-                width = .1, color='#00BA38') +
-  labs(x = "Year",
-       y = "Combined Cover of All Native Veg") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+ggplot(ltreb.sum, aes(x = Year, y = Native_mean, group=Veg_Comm, color=Veg_Comm, linetype=Veg_Comm, shape=Veg_Comm)) +
+geom_errorbar(aes(ymin = Native_mean-Native_se, 
+                  ymax = Native_mean+Native_se),
+              width = .1) +
+geom_line() +
+geom_point() +
+labs(x = "Year",
+     y = "Combined Cover of All Native Veg") +
+scale_color_manual(values=c('#619CFF','#00BA38')) +
+theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
