@@ -71,7 +71,7 @@ Biomass.means <- Biomass %>%
 
 
 # Plot native cover in CSS
-pdf("Graphics/NativeCover.pdf",width = 8,height = 6)
+png("Graphics/NativeCover.png",width = 8,height = 6,units = "in",res=300)
 ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water, 
                       group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(Native_mean-Native_se), ymax=(Native_mean+Native_se)), width=.1, lty=1, show.legend = F) +
@@ -98,7 +98,7 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water,
 dev.off()
 
 # Plot native shrub cover in CSS
-pdf("Graphics/NativeShrubCover.pdf",width = 8,height = 6)
+png("Graphics/NativeShrubCover.png",width = 8,height = 6,units = "in",res=300)
 ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water, 
                       group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(`Native Shrub_mean`-`Native Shrub_se`), ymax=(`Native Shrub_mean`+`Native Shrub_se`)), width=.1, lty=1, show.legend = F) +
@@ -125,7 +125,7 @@ ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water,
 dev.off()
 
 # Plot diversity versus water input
-pdf("Graphics/ShannonWater.pdf",width = 8,height = 6)
+png("Graphics/ShannonWater.png",width = 8,height = 6,units = "in",res=300)
 ggplot(veg.means, aes(x=Water.input, y=(Shannon.diversity_mean), color=Water, 
                           group = Water, shape = Water, label = Year)) + 
   geom_errorbar(aes(ymin=(Shannon.diversity_mean-Shannon.diversity_se), ymax=(Shannon.diversity_mean+Shannon.diversity_se)), width=.1, lty=1, show.legend = F) +
@@ -152,7 +152,7 @@ dev.off()
 
 
 # Plot biomass
-pdf("Graphics/Biomass.pdf",width = 8,height = 6)
+png("Graphics/Biomass.png",width = 8,height = 6,units = "in",res=300)
 ggplot(Biomass.means, aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
@@ -179,7 +179,7 @@ ggplot(Biomass.means, aes(x=Year, y=(Biomass.per.area_mean), color=Water,
 dev.off()
 
 # Plot biomass versus water input
-pdf("Graphics/BiomassWater.pdf",width = 8,height = 6)
+png("Graphics/BiomassWater.png",width = 8,height = 6,units = "in",res=300)
 ggplot(Biomass.means, aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, shape = Water, label = Year)) + 
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
