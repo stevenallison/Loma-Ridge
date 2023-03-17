@@ -99,7 +99,7 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water,
 dev.off()
 
 # Plot native relative abundance
-png("Graphics/NativeRelAb.pdf",width = 8,height = 6,units = "in",res=300)
+png("Graphics/NativeRelAb.png",width = 8,height = 6,units = "in",res=300)
 ggplot(veg.means, aes(x=Year, y=(Native.Rel.Ab_mean), color=Water, 
                       group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(Native.Rel.Ab_mean-Native.Rel.Ab_se), ymax=(Native.Rel.Ab_mean+Native.Rel.Ab_se)), width=.1, lty=1, show.legend = F) +
@@ -126,7 +126,7 @@ ggplot(veg.means, aes(x=Year, y=(Native.Rel.Ab_mean), color=Water,
 dev.off()
 
 # Plot native shrub cover in CSS
-png("Graphics/NativeShrubCover.png",width = 8,height = 6,units = "in",res=300)
+png("Graphics/NativeShrubCover.png",width = 8,height = 4,units = "in",res=300)
 ggplot(filter(veg.means,Ecosystem=="CSS"), aes(x=Year, y=(`Native Shrub_mean`), color=Water, 
                       group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(`Native Shrub_mean`-`Native Shrub_se`), ymax=(`Native Shrub_mean`+`Native Shrub_se`)), width=.1, lty=1, show.legend = F) +
