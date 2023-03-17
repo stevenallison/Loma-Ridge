@@ -89,18 +89,45 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water,
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.8,0.8), 
+        legend.position=c(0.15,0.35), 
         legend.title = element_text(size=14),
         legend.key.width= unit(1.5, 'cm'),
         legend.text = element_text(size=12),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
+  facet_grid(Ecosystem~Nitrogen)
+dev.off()
+
+# Plot native relative abundance
+png("Graphics/NativeRelAb.pdf",width = 8,height = 6,units = "in",res=300)
+ggplot(veg.means, aes(x=Year, y=(Native.Rel.Ab_mean), color=Water, 
+                      group = Water, linetype = Water, shape = Water)) + 
+  geom_errorbar(aes(ymin=(Native.Rel.Ab_mean-Native.Rel.Ab_se), ymax=(Native.Rel.Ab_mean+Native.Rel.Ab_se)), width=.1, lty=1, show.legend = F) +
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Native relative abundance") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position=c(0.25,0.65), 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(Ecosystem~Nitrogen)
 dev.off()
 
 # Plot native shrub cover in CSS
 png("Graphics/NativeShrubCover.png",width = 8,height = 6,units = "in",res=300)
-ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water, 
+ggplot(filter(veg.means,Ecosystem=="CSS"), aes(x=Year, y=(`Native Shrub_mean`), color=Water, 
                       group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(`Native Shrub_mean`-`Native Shrub_se`), ymax=(`Native Shrub_mean`+`Native Shrub_se`)), width=.1, lty=1, show.legend = F) +
   geom_line() +
@@ -116,13 +143,13 @@ ggplot(veg.means, aes(x=Year, y=(`Native Shrub_mean`), color=Water,
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.8,0.8), 
-        legend.title = element_text(size=14),
-        legend.key.width= unit(1.5, 'cm'),
-        legend.text = element_text(size=12),
+        legend.position=c(0.5,0.78), 
+        legend.title = element_text(size=12),
+        legend.key.width= unit(1, 'cm'),
+        legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
+  facet_grid(~Nitrogen)
 dev.off()
 
 # Plot diversity versus water input
@@ -143,12 +170,12 @@ ggplot(veg.means, aes(x=Water.input, y=(Shannon.diversity_mean), color=Water,
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.9,0.87), 
+        legend.position=c(0.4,0.65), 
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
+  facet_grid(Ecosystem~Nitrogen)
 dev.off()
 
 
@@ -176,7 +203,7 @@ ggplot(Biomass.means, aes(x=Year, y=(Biomass.per.area_mean), color=Water,
         legend.text = element_text(size=12),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
+  facet_grid(Ecosystem~Nitrogen)
 dev.off()
 
 # Plot biomass versus water input
@@ -197,11 +224,11 @@ ggplot(Biomass.means, aes(x=Water.input, y=(Biomass.per.area_mean), color=Water,
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.9,0.87), 
+        legend.position=c(0.4,0.87), 
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  facet_grid(Nitrogen~Ecosystem)
+  facet_grid(Ecosystem~Nitrogen)
 dev.off()
 
