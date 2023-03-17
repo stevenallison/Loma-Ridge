@@ -16,7 +16,8 @@ native.cover <- veg.species %>%
   filter(!Native.Non.Native %in% c("Stem","Unknown")) %>%
   group_by(Ecosystem,Year,Water,Nitrogen,Treated_2015_2020,Plot_ID,Native.Non.Native) %>%
   summarize(Native.Cover = sum(Cover)) %>%
-  pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover, values_fill = 0)
+  pivot_wider(names_from = Native.Non.Native, values_from = Native.Cover, values_fill = 0) %>%
+  mutate(Native.Rel.Ab = Native/(Native+`Non-Native`))
 
 # compute cover for functional groups by plot
 functional.cover <- veg.species %>%
