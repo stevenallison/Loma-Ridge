@@ -181,8 +181,9 @@ dev.off()
 
 # Plot biomass
 png("Graphics/Biomass.png",width = 8,height = 4,units = "in",res=300)
-ggplot(filter(Biomass.means,Ecosystem=="CSS"), aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
+ggplot(filter(Biomass.means,Ecosystem=="Grassland"), aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, linetype = Water, shape = Water)) + 
+  # geom_col(aes(y=-Water.input/2,width=0.1),position = "dodge") +
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_line() +
   geom_point(size = 2) +
@@ -191,14 +192,13 @@ ggplot(filter(Biomass.means,Ecosystem=="CSS"), aes(x=Year, y=(Biomass.per.area_m
        shape = "Water",
        y = "Biomass (g/m^2)") +
   scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
-  geom_col(aes(y=Water.input,width=0.1),position = "dodge") +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.25,0.75), 
+        legend.position=c(0.15,0.75), 
         legend.title = element_text(size=14),
         legend.key.width= unit(1.5, 'cm'),
         legend.text = element_text(size=12),
@@ -208,12 +208,12 @@ ggplot(filter(Biomass.means,Ecosystem=="CSS"), aes(x=Year, y=(Biomass.per.area_m
 dev.off()
 
 # Plot biomass versus water input
-png("Graphics/BiomassWater.png",width = 8,height = 6,units = "in",res=300)
-ggplot(Biomass.means, aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
+png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
+ggplot(filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"), aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, shape = Water, label = Year)) + 
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_point(size = 2) +
-  geom_text(size = 1,hjust=-0.25) +
+  # geom_text(size = 1,hjust=-0.25) +
   labs(color = "Water",
        shape = "Water",
        y = "Biomass (g/m^2)",
@@ -225,11 +225,10 @@ ggplot(Biomass.means, aes(x=Water.input, y=(Biomass.per.area_mean), color=Water,
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.4,0.87), 
+        legend.position=c(0.8,0.2), 
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) +
-  facet_grid(Ecosystem~Nitrogen)
+        panel.grid.minor = element_blank())
 dev.off()
 
