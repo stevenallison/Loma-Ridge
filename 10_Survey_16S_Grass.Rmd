@@ -1,0 +1,542 @@
+---
+title: "Survey10_16S_Grass"
+author: "Claudia Weihe"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r, version info, include=TRUE}
+R.version
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup for knitting, include=FALSE}
+require(knitr)
+opts_knit$set(root.dir = normalizePath('~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW'))
+```
+
+
+```{r, set up directories for analyses, include=FALSE}
+library(readr)
+# Set data/output directories
+root_dir <- "~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW"
+data_dir <- "~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW"
+output_dir <-"~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW"
+knitr::opts_knit$set(root_dir)
+```
+
+
+```{r calling libraries,echo=TRUE, include=TRUE, results='hide', message=FALSE}
+library(vegan)
+library(ggplot2)
+library(EcolUtils)
+library(biomformat)
+library(kableExtra)
+library(reshape2)
+library(tidyr)
+library(rstatix)
+library(ggpubr)
+library(tidyverse)
+#devtools::install_github("jbisanz/qiime2R", force= TRUE)
+library(dplyr)
+library(ggtext)
+library(ggsci)
+```
+
+
+##### Check which directory you are in
+```{r check current workdirectory, echo=TRUE, include=TRUE, results='hide'}
+getwd()
+```
+##### Set the working directory you would like to use
+
+```{r set workdirectory, echo=TRUE, include=TRUE, results='hide'}
+setwd("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW")
+```
+
+##### Unzip .qza files -- table and taxonomy. 
+```{r unzip otu table, eval=FALSE, include=TRUE}
+#this table has been frequency filtered, identity filtered (no soil samples, no controls, no CSS, no samples from Andie:16S or ITS) and mitochondria and chloroplasts have been filtered
+unzip(zipfile ='final-filtered-tableNew1.qza')
+
+```
+
+```{r get the otu table in the right format,echo=TRUE,include=TRUE, results='hide'}
+hdf5_biom <- read_hdf5_biom("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW/ec6392f5-8036-4239-99a1-e15704f78c61/data/feature-table.biom")
+write_biom(hdf5_biom, "Survey16SormattedNEW_biom")
+json_biom <- read_biom("Survey16SormattedNEW_biom")
+OTU_tableNEW <- as.data.frame(as.matrix(biom_data(json_biom)))
+write.table(as.data.frame(as.matrix(OTU_tableNEW, file = "OTU_tableNEW.tsv", quote=FALSE, sep='\t', col.names = NA)))
+```
+
+
+```{r unzip taxonomy table, eval=FALSE, include=TRUE}
+unzip(zipfile ='taxonomyNew.qza')
+```
+
+##### Read in the taxonomy table
+```{r read in taxonomy from unzipped file, echo=TRUE, include=TRUE}
+taxonomy <- read.delim("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW/4b1e5e15-0404-4fd2-86a5-463aac965a79/data/taxonomy.tsv", row.names=1)
+```
+
+##### Read in the metadata
+```{r read in metadata,echo=TRUE, include= TRUE, results='hide'}
+metadata <- read.delim("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW/samples-to-keepNEW.tsv", stringsAsFactors=TRUE, row.names = 1)
+names(metadata)
+```
+
+
+
+```{r Sequence counts per sample, echo=TRUE, include=FALSE, warning=FALSE, results='hide'}
+#This command will help inform us of the read distribution across each sample.
+set.seed(1234)
+###transpose filtered OTU table, so it can be merged with metadata
+OTU_tableNEWt <- as.data.frame(t(OTU_tableNEW[,1:ncol(OTU_tableNEW)]))
+
+###merge filtered OTU table with metadata to be able to filter OTU table by sample type
+# merged_OTU_metadata <- merge(metadata, OTU_table, by.x = "row.names", by.y = "row.names")
+
+  #to get the sequence number per sample
+Summary2 <- data.frame(rowSums(OTU_tableNEWt))
+merged_Summary_metadata <- merge(metadata, Summary2, by.x = "row.names", by.y = "row.names")
+ 
+
+```
+
+```{r, merge OTU table with taxonomy and filter, echo=TRUE, include=TRUE, results='hide'}
+OTU_taxonomy <- as.data.frame(merge(taxonomy, 
+                            OTU_tableNEW, by.x = "row.names", by.y = "row.names", na.rm=TRUE))
+
+
+OTU_table_no_eu <- OTU_taxonomy[!grepl("Eukaryota", 
+                                          OTU_taxonomy$`Taxon`),] #6833 ASVs
+row.names(OTU_table_no_eu) <- OTU_table_no_eu$Row.names
+OTU_table_no_eu$Row.names <- NULL
+OTU_table_no_eu$Confidence <- NULL
+OTU_table_no_eu$Taxon <- NULL
+
+###transpose filtered OTU table, so it can be merged with metadata
+OTU_table_filtered <- as.data.frame(t(OTU_table_no_eu[,1:ncol(OTU_table_no_eu)]))
+```
+
+```{r, barplot to see sequence distribution, include=FALSE}
+set.seed(1234)
+sort(rowSums(OTU_table_filtered))
+barplot(sort(rowSums(OTU_table_filtered)), ylim = c(0, max(rowSums(OTU_table_filtered))), 
+        xlim = c(0, NROW(OTU_table_filtered)), col = "Blue", ylab = "Read Depth", xlab = "Sample") 
+```
+
+### Rarefaction Curve for all samples. 
+#### RD of 1000 sequences
+```{r, rarefaction for all samples, include=FALSE}
+sort(rowSums(OTU_table_filtered))
+unrarfied.curves.16s <-rarecurve(OTU_table_filtered, step = 1000, label = FALSE) 
+
+#set rarefaction depth to 1000
+set.seed(seed = 999)                  
+rared.otu.16s <- as.data.frame((rrarefy.perm(OTU_table_filtered, sample = 1000, n = 300, round.out = T)))#because rrarefy.perm randomly picks OTUs at a specified sequencing depth, the total number of OTUs may change with each run of the function.
+#warnings(rared.otu.16s)
+rared.otu.16s <- as.data.frame(rared.otu.16s[rowSums(rared.otu.16s) >= 1000-(1000*.1), colSums(rared.otu.16s) >= 1])
+
+rarefied.curves.16s <- rarecurve(rared.otu.16s, step = 300)
+
+rared.otu.16s.t <- t(rared.otu.16s)
+rared.otu.taxaid.16s <- merge(rared.otu.16s.t, taxonomy, by.x = "row.names", by.y = "row.names")
+write.table(rared.otu.taxaid.16s, file = "rared.otu.taxaid.16s.tsv", quote=FALSE, sep='\t', col.names = NA)
+
+sort(rowSums(rared.otu.16s)) 
+```
+
+
+### Alpha diversity 
+
+```{r, alpha diversity shannon index, stats, echo=TRUE, results='hide'}
+#Alpha diversity is a measure of species richness within an environment.
+
+#Shannon diversity is a metric of alpha-diversity.
+shannon <- as.data.frame(diversity(rared.otu.16s, index = "shannon"))
+
+#Merge with metadata to create a plot.
+merged_alpha <- merge(shannon, metadata, by.x = "row.names", by.y = "row.names")
+
+#re-name column name
+names(merged_alpha)
+colnames(merged_alpha) [colnames(merged_alpha)=="diversity(rared.otu.16s, index = \"shannon\")"] <- "Shannon_diversity" 
+
+#Plotting alpha diversity:
+merged_alpha$Year <- factor(merged_alpha$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"))              
+
+
+#plot
+ggplot(data = merged_alpha) +
+  aes(x = Year, y = Shannon_diversity, color= seqrun, fill = seqrun) +
+  geom_boxplot(alpha = 0.6) +
+  geom_point (alpha = 0.5) +
+  labs(title = ,x = 'Year', y = 'Shannon index', fill = 'Type') +
+  theme_classic(base_size = 18, base_line_size = 1)+
+  theme(legend.position = "none") 
+
+ggsave(file ="AlphaseqrunbyYear.svg", plot= last_plot(), width=10, height=10)
+```
+
+
+#### Distribution of number of variable among all samples
+```{r, sample distribution for all samples, rarefied)}
+
+yearcount <- merged_alpha %>% group_by(Year) %>% tally()
+yearcount
+Season_count <- merged_alpha %>% group_by(Season) %>% tally()
+Season_count
+
+Precipitation_Treatment_count <- merged_alpha %>% group_by(Water.Treatment) %>% tally()
+Precipitation_Treatment_count
+
+Nitrogen_Treatment_count <-  merged_alpha %>% group_by(Nitrogen) %>% tally()
+Nitrogen_Treatment_count
+
+seqrun_count <-  merged_alpha %>% group_by(seqrun) %>% tally()
+seqrun_count
+
+```
+
+
+## Statistical analysis of Shannon diversity 
+
+```{r, statistics of Shannon diversity, echo=TRUE}
+
+#create a histogram for Shannon diversity; squarooted Shannon index numbers
+merged_alpha$sqrtShannon <- sqrt(merged_alpha$Shannon_diversity)
+hist(merged_alpha$sqrtShannon, main="Shannon diversity", xlab="", breaks=10)
+
+#test Shannon diversity for normality
+Shapiro_Wilk_normality_test <- shapiro.test(merged_alpha$sqrtShannon)
+Shapiro_Wilk_normality_test #data are not distributed normal for stats run Kruskal-Wallis, Wilcoxon rank sum test, or general linear models with another distribution are used when the data is not normal
+
+# data:  merged_alpha$sqrtShannon
+# W = 0.93739, p-value = 1.805e-12
+
+
+#to check for homogeneity of variances
+bartlett.test(sqrtShannon ~ Year, data = merged_alpha)
+# data:  sqrtShannon by Water.Treatment
+# Bartlett's K-squared = 39.481, df = 9, p-value = 9.434e-06
+
+
+kruskal.test(sqrtShannon ~ Year, data = merged_alpha) 
+# data:  sqrtShannon by Water.Treatment
+# Kruskal-Wallis chi-squared = 116.81, df = 9, p-value < 2.2e-16
+
+#to check for homogeneity of variances
+bartlett.test(sqrtShannon ~ Water.Treatment, data = merged_alpha)
+# data:  sqrtShannon by Water.Treatment
+# Bartlett's K-squared = 2.6748, df = 1, p-value = 0.1019
+
+
+kruskal.test(sqrtShannon ~ Water.Treatment, data = merged_alpha) 
+# data:  sqrtShannon by Water.Treatment
+# Kruskal-Wallis chi-squared = 1.4806, df = 1, p-value = 0.2237
+
+kruskal.test(sqrtShannon ~ Nitrogen, data = merged_alpha) 
+# data:  sqrtShannon by Nitrogen
+# Kruskal-Wallis chi-squared = 3.7742, df = 1, p-value = 0.05205
+
+bartlett.test(sqrtShannon ~ seqrun, data = merged_alpha)
+# data:  sqrtShannon by seqrun
+# Bartlett's K-squared = 14.038, df = 3, p-value = 0.002854
+
+kruskal.test(sqrtShannon ~ seqrun, data = merged_alpha) 
+# data:  sqrtShannon by seqrun
+# Kruskal-Wallis chi-squared = 138.09, df = 3, p-value < 2.2e-16
+
+bartlett.test(sqrtShannon ~ Season, data = merged_alpha)
+# data:  sqrtShannon by Season
+# Bartlett's K-squared = 7.0993, df = 3, p-value = 0.0688
+
+kruskal.test(sqrtShannon ~ Season, data = merged_alpha) 
+# data:  sqrtShannon by Season
+# Kruskal-Wallis chi-squared = 1.1358, df = 3, p-value = 0.7684
+```
+
+```{r, plotting nitrogen alpha diversity differences, echo=FALSE, include= TRUE}
+#plot
+Nitrogen <- ggplot(data = merged_alpha) +
+  aes(x = Nitrogen, y = Shannon_diversity, color= Nitrogen, fill = Nitrogen) +
+  geom_boxplot(alpha = 0.6) +
+  geom_point (alpha = 0.5) +
+  labs(title = ,x = 'Nitrogen Treatment', y = 'Shannon index', fill = 'Nitrogen') +
+  theme_classic(base_size = 18, base_line_size = 1)+
+  theme(legend.position = "none") 
+p1 <- Nitrogen +  scale_fill_nejm()
+p1 + scale_color_nejm()
+ggsave(file ="AlphaAll_nitrogen.svg", plot= last_plot(), width=10, height=10)
+```
+
+### Richness 
+```{r, species observed , echo=FALSE, include=FALSE}
+SpeciesObserved <- as.data.frame(apply(rared.otu.16s[,-1]>0,1,sum))
+names(SpeciesObserved)
+colnames(SpeciesObserved)[colnames(SpeciesObserved)=="apply(rared.otu.16s[, -1] > 0, 1, sum)"] <- "SOB"
+merged_alphaSOB <- merge(SpeciesObserved, metadata, by.x="row.names", by.y="row.names")
+write.table(merged_alphaSOB, file = "merged_alphaSOB.tsv", quote=FALSE, sep='\t', col.names = NA)
+
+
+#Plotting alpha diversity:
+merged_alphaSOB$Year <- factor(merged_alphaSOB$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"))         
+#plot
+ggplot(data = merged_alphaSOB) +
+  aes(x = Year, y = SOB, color= Year, fill = Year) +
+  geom_boxplot(alpha = 0.6) +
+  geom_point (alpha = 0.5) +
+  labs(title = ,x = 'Year', y = 'Richness', fill = 'Season') +
+  theme_classic(base_size = 18, base_line_size = 1)+
+  theme(legend.position = "none") 
+
+ggsave(file ="RichnessAll.svg", plot= last_plot(), width=10, height=10)
+```
+
+
+### Pielou 
+```{r, evenness calculation, echo=FALSE,include=TRUE}
+library (vegan)
+data<- as.data.frame(rared.otu.16s)
+S <- as.data.frame(apply(rared.otu.16s[,-1] > 0,1,sum))
+pie <- as.data.frame(diversity(rared.otu.16s[-1], index = "shannon")/log(S))
+names(pie)
+
+#rename column
+colnames(pie)[colnames(pie)=="apply(rared.otu.16s[, -1] > 0, 1, sum)"] <- "Pielou"
+
+#merge pielou data with metadata
+merged_alphaPie <- merge(pie, metadata, by.x="row.names", by.y="row.names")
+write.table(merged_alphaPie, file = "merged_Pie.tsv", quote=FALSE, sep='\t', col.names = NA)
+#read in table cohort2merged_Pie.tsv
+names(merged_alphaPie)
+
+hist(merged_alphaPie$Pielou, main="Evenness", xlab="", breaks=10)
+Shapiro_Wilk_normality_test <- shapiro.test(merged_alphaPie$Pielou)
+Shapiro_Wilk_normality_test #data are not distributed normal for stats run Kruskal-Wallis, Wilcoxon rank sum test, or general linear models with another distribution are used when the data is not normal
+# data:  merged_alphaPie$Pielou
+# W = 0.69002, p-value < 2.2e-16
+
+
+bartlett.test(Pielou ~ Year, data = merged_alphaPie)
+# data:  Pielou by Year
+# Bartlett's K-squared = 121.38, df = 9, p-value < 2.2e-16
+
+#Kruskal Wallis is run since Pielou values are not normally distributed
+kruskal.test(Pielou ~ Year, data = merged_alphaPie) 
+# data:  Pielou by Year
+# Kruskal-Wallis chi-squared = 35.925, df = 9, p-value = 4.087e-05
+
+
+#to check for homogeneity of variances
+bartlett.test(Pielou ~ Water.Treatment, data = merged_alphaPie)
+# data:  Pielou by Water.Treatment
+# Bartlett's K-squared = 0.091454, df = 1, p-value = 0.7623
+
+#Kruskal Wallis is run since Pielou values are not normally distributed
+kruskal.test(Pielou ~ Water.Treatment, data = merged_alphaPie) 
+# data:  Pielou by Water.Treatment
+# Kruskal-Wallis chi-squared = 1.219, df = 1, p-value = 0.2696
+
+kruskal.test(Pielou ~ Nitrogen, data = merged_alphaPie) 
+# data:  Pielou by Nitrogen
+# Kruskal-Wallis chi-squared = 2.6734, df = 1, p-value = 0.102
+
+kruskal.test(Pielou ~ Season, data = merged_alphaPie) 
+# data:  Pielou by Season
+# Kruskal-Wallis chi-squared = 21.18, df = 3, p-value = 9.661e-05
+
+kruskal.test(Pielou ~ seqrun, data = merged_alphaPie) 
+# data:  Pielou by seqrun
+# Kruskal-Wallis chi-squared = 44.834, df = 3, p-value = 1.004e-09
+
+
+#Plotting alpha diversity:
+merged_alphaPie$Year <- factor(merged_alphaPie$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"))         
+#plot
+ggplot(data = merged_alphaPie) +
+  aes(x = Year, y = Pielou, color= Year, fill = Year) +
+  geom_boxplot(alpha = 0.6) +
+  geom_point (alpha = 0.5) +
+  labs(title = ,x = 'Year', y = 'Evenness', fill = 'Season') +
+  theme_classic(base_size = 18, base_line_size = 1)+
+  theme(legend.position = "none") 
+
+ggsave(file ="EvennessYear.svg", plot= last_plot(), width=10, height=10)
+
+
+```
+
+### Beta Diversity 
+
+#### Create Beta diversity matrix. We will use Bray Curtis. The rarefaction depth will be set to 2096 and we will run 100 reiterations to rarefy. 
+```{r Bray and rarefy the OTU table, echo=TRUE, include=FALSE, warning=FALSE}
+set.seed(999)
+bray.dist.matrix <- avgdist(OTU_table_filtered, sample = 1000, meanfun = median,transf= sqrt, iterations = 100, round.out = T) # were below rarefaction depth
+write.table((as.data.frame(as.matrix(bray.dist.matrix))), file = "Bray_All.tsv", quote=FALSE, sep='\t', col.names = NA)
+
+#with square root transformation
+bray.dist.T <- avgdist(OTU_table_filtered, sample = 1000, meanfun = median, transf= sqrt, iterations = 100, round.out = T)
+class(bray.dist.T)
+
+bray.dist.T<- read.delim("~/Desktop/work/Survey16S/tenyearSurvey16SGrass/NEW/Bray_All.tsv", row.names=1)
+```
+
+```{r run ordination to create an NMDS, echo=FALSE, include=FALSE}
+#tried 2D but it would not reach a repeated stress value
+#with transformed data
+NMDS1 <- metaMDS(bray.dist.T,distance = "bray", k = 2, trymax = 500)
+
+```
+
+```{r x and y coordinates , echo=FALSE, include=FALSE}
+coordinates <- data.frame(NMDS1$points[,1:2])
+head(coordinates)
+write.csv(coordinates, file = "NMDS1_coord.csv")
+
+```
+
+```{r NMDS prep, echo=FALSE, include=TRUE}
+stressplot(NMDS1) #Large scatter around the line suggests that original dissimilarities are not well preserved in the reduced number of dimensions. Looks pretty good in this case.
+
+plot(x = coordinates$MDS1, y = coordinates$MDS2)
+
+```
+
+```{r merge metadata with NMDS , echo=FALSE, include=FALSE}
+nmds_plus_metadata <- merge(coordinates, metadata, by.x = "row.names", by.y = "row.names") 
+write.csv(nmds_plus_metadata,file =  "nmds_plus_meta.csv") # also functions as matching metadata to go into primer with the bray curtis distance matrix
+
+```
+
+# NMDS Plot of 16S community data 
+## 
+```{r ,16S NMDS plot by treatment, echo=FALSE, include=TRUE}
+library(ggplot2)
+library(ggsci)
+
+
+ggplot(data = nmds_plus_metadata) +
+  aes(x = MDS1, y = MDS2, color = as.factor(Water.Treatment))+  #Creates and colors legend to match, modify after $ here.
+  geom_point(data=nmds_plus_metadata,aes(x=MDS1,y=MDS2))+  #shape = Water.Treatment )) +
+  scale_color_manual(values = c("Drought" = "#E18727FF",
+                               "Ambient" ="#0072B5FF")) +
+  # scale_shape_manual(values = c(16,17,1,2,0,15, 8,9,3,12,13,14,22,23,4)) +
+  #geom_text(label = nmds_plus_metadata$Year, color = "darkgrey", size=rel(1.5)) +
+  # scale_color_manual(values = c("Ambient" = "#0072B5FF",
+  #                               "Drought" ="#BC3C29FF")) +
+  theme_minimal() +
+  theme_bw(base_size = 15) + 
+  theme(panel.background = element_blank(), 
+        panel.grid.major = element_blank(),  #remove major-grid labels
+        panel.grid.minor = element_blank(),  #remove minor-grid labels
+        plot.background = element_blank()) +
+   labs(title= '', subtitle = '2D stress = 0.195', fill = 'Treatment', x = '', y = '') +
+  theme(axis.text.x = element_text(angle = 45)) +
+  theme(text = element_text(size=rel(3.5)))+ 
+  facet_wrap(~Year)
+  
+   
+ggsave(file = "NMDS_All_T.svg",plot = last_plot(), width = 10, height = 8)
+ggsave(file = "NMDS_All2.svg",plot = last_plot(), width = 10, height = 8)
+ggsave(file= "NMDS_ambient_only.svg", plot =last_plot(), width = 10, height = 8)
+ggsave(file = "NMDS_Y_Facet4.svg",plot = last_plot(), width = 10, height = 8)
+ggsave(file= "NMDS_nitro_only.svg", plot =last_plot(), width = 10, height = 8)
+```
+
+```{r, get scores for ordinations and plot centroids , echo=TRUE} 
+
+scrs <- scores(NMDS1, display = 'sites')
+write.table((as.data.frame(as.matrix(scrs))), file = "Scores_New.tsv", quote=FALSE, sep='\t', col.names = NA)
+
+# scrs <- cbind(as.data.frame(scrs), Year.WT= as.factor(nmds_plus_metadata$YW))
+scrs2 <- cbind(as.data.frame(scrs), nmds_plus_metadata)
+cent <- aggregate(cbind(NMDS1, NMDS2) ~ YW, data = scrs2, FUN = mean)
+segs <- merge(scrs2, setNames(cent, c('YW','oNMDS1', 'oNMDS2')),
+              by = 'YW', sort = FALSE)
+
+segs$Year = factor(segs$Year)
+
+ggplot(segs, aes(NMDS1, NMDS2,color=factor(Water.Treatment)))+geom_point(size=3, alpha = 0.3) +
+   #scale_shape_manual(values=c(0,15,1,16,2,17,5,18,7,3)) +
+  geom_point(aes(oNMDS1,oNMDS2),size=5, shape = 16)+
+  geom_text(data=segs, mapping = aes(oNMDS1, oNMDS2, label=Year, color="#000000", vjust = 1,hjust=0, size = 3)) +
+  scale_color_manual(values = c("Drought" = "#D3D3D3",
+                               "Ambient" ="#A9A9A9")) +
+  # scale_color_manual(values = c("2012-Drought" = "#e11d79",
+  #                               "2014-Drought" ="#ff0b49",
+  #                               "2015-Drought"="#ff3e7a",
+  #                               "2016-Drought"="#ff6e77", 
+  #                               "2017-Drought"="#9c000b", 
+  #                               "2018-Drought"="#f6924b",
+  #                               "2019-Drought"="#875316",
+  #                               "2020-Drought"="#f86700",
+  #                               "2021-Drought"="#b45f42", 
+  #                               "2022-Drought"="#c13a00", 
+  #                               "2012-Ambient" = "#4d4d86",
+  #                               "2014-Ambient" ="#449300",
+  #                               "2015-Ambient"="#7c8fff",
+  #                               "2016-Ambient"="#00d48f", 
+  #                               "2017-Ambient"="#006495", 
+  #                               "2018-Ambient"="#335d25",
+  #                               "2019-Ambient"="#9bc7ff",
+  #                               "2020-Ambient"="#69d8ca",
+  #                               "2021-Ambient"="#6682b5", 
+  #                               "2022-Ambient"="#01cffd")) +
+  # scale_fill_manual(values = c("2012-Drought" = "#e11d79",
+  #                               "2014-Drought" ="#ff0b49",
+  #                               "2015-Drought"="#ff3e7a",
+  #                               "2016-Drought"="#ff6e77", 
+  #                               "2017-Drought"="#9c000b", 
+  #                               "2018-Drought"="#f6924b",
+  #                               "2019-Drought"="#875316",
+  #                               "2020-Drought"="#f86700",
+  #                               "2021-Drought"="#b45f42", 
+  #                               "2022-Drought"="#c13a00", 
+  #                               "2012-Ambient" = "#4d4d86",
+  #                               "2014-Ambient" ="#449300",
+  #                               "2015-Ambient"="#7c8fff",
+  #                               "2016-Ambient"="#00d48f", 
+  #                               "2017-Ambient"="#006495", 
+  #                               "2018-Ambient"="#335d25",
+  #                               "2019-Ambient"="#9bc7ff",
+  #                               "2020-Ambient"="#69d8ca",
+  #                               "2021-Ambient"="#6682b5", 
+  #                               "2022-Ambient"="#01cffd")) +                       # centroids      
+  theme_minimal() +
+  theme_bw(base_size = 15) + 
+  theme(panel.background = element_blank(), 
+        panel.grid.major = element_blank(),  #remove major-grid labels
+        panel.grid.minor = element_blank(),  #remove minor-grid labels
+        plot.background = element_blank()) +  
+   labs(title= '', subtitle = '2D stress = 0.195', fill = 'Treatment', x = '', y = '') +
+    # facet_wrap(~Water.Treatment, scales = "free") +
+  theme(axis.text.x = element_text(angle = 45)) +
+  theme(text = element_text(size=rel(3.5))) 
+  facet_wrap(~Water.Treatment)
+                                 
+ggsave(file = "NMDS_All_cent_grey.svg",plot = last_plot(), width = 10, height = 8)
+```
+
+
+```{r, spider plot}
+
+ggplot() +
+  geom_segment( #segment must go before point so points are in front of lines
+    data = segs,
+    aes(x = NMDS1, y = NMDS2, xend = oNMDS1, yend = oNMDS2, colour = YW)) +
+  geom_point(
+    data = segs,
+    aes(x = NMDS1, y = NMDS2, colour = YW, fill = YW, shape = Water.Treatment), size = 2) +
+  # scale_colour_manual(values = cols.colour) +
+  # scale_fill_manual(values = cols.fill, guide = FALSE) +
+  scale_shape_manual(values = c(21,  17)) + 
+  coord_equal() +
+  theme_bw() 
+ggsave("SpiderSurvey.svg",plot = last_plot(), width = 10, height = 8 )
+```
