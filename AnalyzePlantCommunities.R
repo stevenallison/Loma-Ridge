@@ -2,6 +2,7 @@
 library(googledrive)
 library(tidyverse)
 library(vegan)
+library(gridExtra)
 
 Annual.precip <- drive_get("AnnualPrecipLoma.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
@@ -179,9 +180,9 @@ ggplot(veg.means, aes(x=Water.input, y=(Shannon.diversity_mean), color=Water,
 dev.off()
 
 
-# Plot biomass
-png("Graphics/Biomass.png",width = 8,height = 4,units = "in",res=300)
-ggplot(filter(Biomass.means,Ecosystem=="Grassland"), aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
+# Plot biomass with precip inputs
+biomass.plot <- 
+  ggplot(filter(Biomass.means,Ecosystem=="Grassland"), aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_line() +
@@ -204,9 +205,9 @@ ggplot(filter(Biomass.means,Ecosystem=="Grassland"), aes(x=Year, y=(Biomass.per.
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
   facet_grid(~Nitrogen)
-dev.off()
 
-ggplot(filter(Biomass.means,Ecosystem=="Grassland"),
+precip.plot <-
+  ggplot(filter(Biomass.means,Ecosystem=="Grassland"),
        aes(x=Year, y=Water.input, color=Water, group = Water, linetype = Water, shape = Water)) + 
   geom_line() +
   geom_point(size = 2) +
@@ -227,8 +228,11 @@ ggplot(filter(Biomass.means,Ecosystem=="Grassland"),
         legend.text = element_text(size=12),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
+  expand_limits(y=0) +
   facet_grid(~Nitrogen)
 
+biomass.precip <- arrangeGrob(biomass.plot, precip.plot, ncol=1, nrow=2, heights = c(4,3))
+ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 10, height = 7)
 
 # Plot biomass versus water input
 png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
