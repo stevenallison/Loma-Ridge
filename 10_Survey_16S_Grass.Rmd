@@ -1,6 +1,6 @@
 ---
 title: "Survey10_16S_Grass"
-author: "Claudia Weihe"
+author: "Claudia Weihe & Steven Allison"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -16,57 +16,45 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r setup for knitting, include=FALSE}
 require(knitr)
-opts_knit$set(root.dir = normalizePath('~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW'))
 ```
 
-
-```{r, set up directories for analyses, include=FALSE}
-library(readr)
-# Set data/output directories
-root_dir <- "~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW"
-data_dir <- "~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW"
-output_dir <-"~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW"
-knitr::opts_knit$set(root_dir)
+```{r installing libraries, echo=TRUE, include=TRUE, results='hide', message=FALSE}
+#devtools::install_github("jbisanz/qiime2R", force= TRUE)
+#devtools::install_github("GuillemSalazar/EcolUtils")
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("biomformat")
 ```
 
 
 ```{r calling libraries,echo=TRUE, include=TRUE, results='hide', message=FALSE}
+library(googledrive)
 library(vegan)
 library(ggplot2)
-library(EcolUtils)
-library(biomformat)
 library(kableExtra)
 library(reshape2)
 library(tidyr)
 library(rstatix)
 library(ggpubr)
 library(tidyverse)
-#devtools::install_github("jbisanz/qiime2R", force= TRUE)
 library(dplyr)
 library(ggtext)
 library(ggsci)
+library(EcolUtils)
+library(biomformat)
 ```
 
-
-##### Check which directory you are in
-```{r check current workdirectory, echo=TRUE, include=TRUE, results='hide'}
-getwd()
-```
-##### Set the working directory you would like to use
-
-```{r set workdirectory, echo=TRUE, include=TRUE, results='hide'}
-setwd("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW")
-```
 
 ##### Unzip .qza files -- table and taxonomy. 
 ```{r unzip otu table, eval=FALSE, include=TRUE}
 #this table has been frequency filtered, identity filtered (no soil samples, no controls, no CSS, no samples from Andie:16S or ITS) and mitochondria and chloroplasts have been filtered
+drive_get("final-filtered-tableNew1.qza", shared_drive = "Microbes and Global Change") %>%
+  drive_download(path = "final-filtered-tableNew1.qza")
 unzip(zipfile ='final-filtered-tableNew1.qza')
-
 ```
 
 ```{r get the otu table in the right format,echo=TRUE,include=TRUE, results='hide'}
-hdf5_biom <- read_hdf5_biom("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW/ec6392f5-8036-4239-99a1-e15704f78c61/data/feature-table.biom")
+hdf5_biom <- read_hdf5_biom("ec6392f5-8036-4239-99a1-e15704f78c61/data/feature-table.biom")
 write_biom(hdf5_biom, "Survey16SormattedNEW_biom")
 json_biom <- read_biom("Survey16SormattedNEW_biom")
 OTU_tableNEW <- as.data.frame(as.matrix(biom_data(json_biom)))
