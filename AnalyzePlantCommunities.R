@@ -183,7 +183,6 @@ dev.off()
 png("Graphics/Biomass.png",width = 8,height = 4,units = "in",res=300)
 ggplot(filter(Biomass.means,Ecosystem=="Grassland"), aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, linetype = Water, shape = Water)) + 
-  # geom_col(aes(y=-Water.input/2,width=0.1),position = "dodge") +
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_line() +
   geom_point(size = 2) +
@@ -206,6 +205,30 @@ ggplot(filter(Biomass.means,Ecosystem=="Grassland"), aes(x=Year, y=(Biomass.per.
         panel.grid.minor = element_blank()) +
   facet_grid(~Nitrogen)
 dev.off()
+
+ggplot(filter(Biomass.means,Ecosystem=="Grassland"),
+       aes(x=Year, y=Water.input, color=Water, group = Water, linetype = Water, shape = Water)) + 
+  geom_line() +
+  geom_point(size = 2) +
+  labs(color = "Water",
+       linetype = "Water",
+       shape = "Water",
+       y = "Water input (mm)") +
+  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position="none", 
+        legend.title = element_text(size=14),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.text = element_text(size=12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  facet_grid(~Nitrogen)
+
 
 # Plot biomass versus water input
 png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
