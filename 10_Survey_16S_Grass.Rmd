@@ -63,12 +63,14 @@ OTU_tableNEW <- as.data.frame(as.matrix(biom_data(json_biom)))
 
 
 ```{r unzip taxonomy table, eval=FALSE, include=TRUE}
+drive_get("taxonomyNew.qza", shared_drive = "Microbes and Global Change") %>%
+  drive_download(path = "taxonomyNew.qza")
 unzip(zipfile ='taxonomyNew.qza')
 ```
 
 ##### Read in the taxonomy table
 ```{r read in taxonomy from unzipped file, echo=TRUE, include=TRUE}
-taxonomy <- read.delim("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW/4b1e5e15-0404-4fd2-86a5-463aac965a79/data/taxonomy.tsv", row.names=1)
+taxonomy <- read.delim("4b1e5e15-0404-4fd2-86a5-463aac965a79/data/taxonomy.tsv", row.names=1)
 ```
 
 ##### Read in the metadata
