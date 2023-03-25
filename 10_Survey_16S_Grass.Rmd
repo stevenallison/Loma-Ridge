@@ -272,7 +272,8 @@ write.table(merged_alphaSOB, file = "merged_alphaSOB.tsv", quote=FALSE, sep='\t'
 
 
 #Plotting alpha diversity:
-merged_alphaSOB$Year <- factor(merged_alphaSOB$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"))         
+merged_alphaSOB$Year <- factor(merged_alphaSOB$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022")) 
+
 #plot
 ggplot(data = merged_alphaSOB) +
   aes(x = Year, y = SOB, color= Year, fill = Year) +
@@ -282,13 +283,12 @@ ggplot(data = merged_alphaSOB) +
   theme_classic(base_size = 18, base_line_size = 1)+
   theme(legend.position = "none") 
 
-ggsave(file ="RichnessAll.svg", plot= last_plot(), width=10, height=10)
+ggsave(file ="Graphics/RichnessAll.png", plot= last_plot(), width=10, height=10)
 ```
 
 
 ### Pielou 
 ```{r, evenness calculation, echo=FALSE,include=TRUE}
-library (vegan)
 data<- as.data.frame(rared.otu.16s)
 S <- as.data.frame(apply(rared.otu.16s[,-1] > 0,1,sum))
 pie <- as.data.frame(diversity(rared.otu.16s[-1], index = "shannon")/log(S))
@@ -309,7 +309,6 @@ Shapiro_Wilk_normality_test #data are not distributed normal for stats run Krusk
 # data:  merged_alphaPie$Pielou
 # W = 0.69002, p-value < 2.2e-16
 
-
 bartlett.test(Pielou ~ Year, data = merged_alphaPie)
 # data:  Pielou by Year
 # Bartlett's K-squared = 121.38, df = 9, p-value < 2.2e-16
@@ -318,7 +317,6 @@ bartlett.test(Pielou ~ Year, data = merged_alphaPie)
 kruskal.test(Pielou ~ Year, data = merged_alphaPie) 
 # data:  Pielou by Year
 # Kruskal-Wallis chi-squared = 35.925, df = 9, p-value = 4.087e-05
-
 
 #to check for homogeneity of variances
 bartlett.test(Pielou ~ Water.Treatment, data = merged_alphaPie)
@@ -342,9 +340,9 @@ kruskal.test(Pielou ~ seqrun, data = merged_alphaPie)
 # data:  Pielou by seqrun
 # Kruskal-Wallis chi-squared = 44.834, df = 3, p-value = 1.004e-09
 
-
 #Plotting alpha diversity:
 merged_alphaPie$Year <- factor(merged_alphaPie$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"))         
+
 #plot
 ggplot(data = merged_alphaPie) +
   aes(x = Year, y = Pielou, color= Year, fill = Year) +
@@ -354,15 +352,14 @@ ggplot(data = merged_alphaPie) +
   theme_classic(base_size = 18, base_line_size = 1)+
   theme(legend.position = "none") 
 
-ggsave(file ="EvennessYear.svg", plot= last_plot(), width=10, height=10)
-
-
+ggsave(file ="Graphics/EvennessYear.png", plot= last_plot(), width=10, height=10)
 ```
 
 ### Beta Diversity 
 
 #### Create Beta diversity matrix. We will use Bray Curtis. The rarefaction depth will be set to 2096 and we will run 100 reiterations to rarefy. 
 ```{r Bray and rarefy the OTU table, echo=TRUE, include=FALSE, warning=FALSE}
+# note: distance matrices take a few minutes to compute
 set.seed(999)
 bray.dist.matrix <- avgdist(OTU_table_filtered, sample = 1000, meanfun = median,transf= sqrt, iterations = 100, round.out = T) # were below rarefaction depth
 write.table((as.data.frame(as.matrix(bray.dist.matrix))), file = "Bray_All.tsv", quote=FALSE, sep='\t', col.names = NA)
@@ -371,7 +368,7 @@ write.table((as.data.frame(as.matrix(bray.dist.matrix))), file = "Bray_All.tsv",
 bray.dist.T <- avgdist(OTU_table_filtered, sample = 1000, meanfun = median, transf= sqrt, iterations = 100, round.out = T)
 class(bray.dist.T)
 
-bray.dist.T<- read.delim("~/Desktop/work/Survey16S/tenyearSurvey16SGrass/NEW/Bray_All.tsv", row.names=1)
+bray.dist.T<- read.delim("Bray_All.tsv", row.names=1)
 ```
 
 ```{r run ordination to create an NMDS, echo=FALSE, include=FALSE}
