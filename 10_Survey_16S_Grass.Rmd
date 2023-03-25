@@ -58,7 +58,7 @@ hdf5_biom <- read_hdf5_biom("ec6392f5-8036-4239-99a1-e15704f78c61/data/feature-t
 write_biom(hdf5_biom, "Survey16SormattedNEW_biom")
 json_biom <- read_biom("Survey16SormattedNEW_biom")
 OTU_tableNEW <- as.data.frame(as.matrix(biom_data(json_biom)))
-write.table(as.data.frame(as.matrix(OTU_tableNEW, file = "OTU_tableNEW.tsv", quote=FALSE, sep='\t', col.names = NA)))
+#write.table(as.data.frame(as.matrix(OTU_tableNEW, file = "OTU_tableNEW.tsv", quote=FALSE, sep='\t', col.names = NA)))
 ```
 
 
