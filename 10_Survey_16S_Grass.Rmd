@@ -375,36 +375,26 @@ bray.dist.T<- read.delim("Bray_All.tsv", row.names=1)
 #tried 2D but it would not reach a repeated stress value
 #with transformed data
 NMDS1 <- metaMDS(bray.dist.T,distance = "bray", k = 2, trymax = 500)
-
 ```
 
 ```{r x and y coordinates , echo=FALSE, include=FALSE}
 coordinates <- data.frame(NMDS1$points[,1:2])
 head(coordinates)
 write.csv(coordinates, file = "NMDS1_coord.csv")
-
 ```
 
 ```{r NMDS prep, echo=FALSE, include=TRUE}
 stressplot(NMDS1) #Large scatter around the line suggests that original dissimilarities are not well preserved in the reduced number of dimensions. Looks pretty good in this case.
-
 plot(x = coordinates$MDS1, y = coordinates$MDS2)
-
 ```
 
 ```{r merge metadata with NMDS , echo=FALSE, include=FALSE}
 nmds_plus_metadata <- merge(coordinates, metadata, by.x = "row.names", by.y = "row.names") 
 write.csv(nmds_plus_metadata,file =  "nmds_plus_meta.csv") # also functions as matching metadata to go into primer with the bray curtis distance matrix
-
 ```
 
 # NMDS Plot of 16S community data 
-## 
 ```{r ,16S NMDS plot by treatment, echo=FALSE, include=TRUE}
-library(ggplot2)
-library(ggsci)
-
-
 ggplot(data = nmds_plus_metadata) +
   aes(x = MDS1, y = MDS2, color = as.factor(Water.Treatment))+  #Creates and colors legend to match, modify after $ here.
   geom_point(data=nmds_plus_metadata,aes(x=MDS1,y=MDS2))+  #shape = Water.Treatment )) +
