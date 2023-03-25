@@ -75,10 +75,11 @@ taxonomy <- read.delim("4b1e5e15-0404-4fd2-86a5-463aac965a79/data/taxonomy.tsv",
 
 ##### Read in the metadata
 ```{r read in metadata,echo=TRUE, include= TRUE, results='hide'}
-metadata <- read.delim("~/Desktop/work/survey16S/tenyearSurvey16SGrass/NEW/samples-to-keepNEW.tsv", stringsAsFactors=TRUE, row.names = 1)
+drive_get("samples-to-keepNEW.tsv", shared_drive = "Microbes and Global Change") %>%
+  drive_download(path = "samples-to-keepNEW.tsv")
+metadata <- read.delim("samples-to-keepNEW.tsv", stringsAsFactors=TRUE, row.names = 1)
 names(metadata)
 ```
-
 
 
 ```{r Sequence counts per sample, echo=TRUE, include=FALSE, warning=FALSE, results='hide'}
@@ -90,11 +91,9 @@ OTU_tableNEWt <- as.data.frame(t(OTU_tableNEW[,1:ncol(OTU_tableNEW)]))
 ###merge filtered OTU table with metadata to be able to filter OTU table by sample type
 # merged_OTU_metadata <- merge(metadata, OTU_table, by.x = "row.names", by.y = "row.names")
 
-  #to get the sequence number per sample
+#to get the sequence number per sample
 Summary2 <- data.frame(rowSums(OTU_tableNEWt))
 merged_Summary_metadata <- merge(metadata, Summary2, by.x = "row.names", by.y = "row.names")
- 
-
 ```
 
 ```{r, merge OTU table with taxonomy and filter, echo=TRUE, include=TRUE, results='hide'}
