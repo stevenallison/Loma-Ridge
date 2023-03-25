@@ -142,7 +142,6 @@ sort(rowSums(rared.otu.16s))
 
 
 ### Alpha diversity 
-
 ```{r, alpha diversity shannon index, stats, echo=TRUE, results='hide'}
 #Alpha diversity is a measure of species richness within an environment.
 
@@ -157,8 +156,7 @@ names(merged_alpha)
 colnames(merged_alpha) [colnames(merged_alpha)=="diversity(rared.otu.16s, index = \"shannon\")"] <- "Shannon_diversity" 
 
 #Plotting alpha diversity:
-merged_alpha$Year <- factor(merged_alpha$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"))              
-
+merged_alpha$Year <- factor(merged_alpha$Year , levels=c("2012", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"))
 
 #plot
 ggplot(data = merged_alpha) +
@@ -169,7 +167,7 @@ ggplot(data = merged_alpha) +
   theme_classic(base_size = 18, base_line_size = 1)+
   theme(legend.position = "none") 
 
-ggsave(file ="AlphaseqrunbyYear.svg", plot= last_plot(), width=10, height=10)
+ggsave(file ="Graphics/AlphaseqrunbyYear.png", plot= last_plot(), width=10, height=10)
 ```
 
 
@@ -261,7 +259,7 @@ Nitrogen <- ggplot(data = merged_alpha) +
   theme(legend.position = "none") 
 p1 <- Nitrogen +  scale_fill_nejm()
 p1 + scale_color_nejm()
-ggsave(file ="AlphaAll_nitrogen.svg", plot= last_plot(), width=10, height=10)
+ggsave(file ="Graphics/AlphaAll_nitrogen.png", plot= last_plot(), width=10, height=10)
 ```
 
 ### Richness 
