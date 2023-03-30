@@ -182,7 +182,7 @@ dev.off()
 
 # Plot biomass with precip inputs
 biomass.plot <- 
-  ggplot(filter(Biomass.means,Ecosystem=="Grassland"), aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
+  ggplot(filter(Biomass.means,Ecosystem=="Grassland",Nitrogen=="Ambient"), aes(x=Year, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, linetype = Water, shape = Water)) + 
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_line() +
@@ -198,16 +198,15 @@ biomass.plot <-
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.15,0.75), 
+        legend.position="none", 
         legend.title = element_text(size=14),
         legend.key.width= unit(1.5, 'cm'),
         legend.text = element_text(size=12),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank()) +
-  facet_grid(~Nitrogen)
+        panel.grid.minor = element_blank())
 
 precip.plot <-
-  ggplot(filter(Biomass.means,Ecosystem=="Grassland"),
+  ggplot(filter(Biomass.means,Ecosystem=="Grassland",Nitrogen=="Ambient"),
        aes(x=Year, y=Water.input, color=Water, group = Water, linetype = Water, shape = Water)) + 
   geom_line() +
   geom_point(size = 2) +
@@ -222,21 +221,18 @@ precip.plot <-
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position="none", 
-        legend.title = element_text(size=14),
+        legend.position=c(0.55,0.77), 
+        legend.title = element_text(size=12),
         legend.key.width= unit(1.5, 'cm'),
-        legend.text = element_text(size=12),
+        legend.text = element_text(size=10),
+        legend.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank()) +
-  expand_limits(y=0) +
-  facet_grid(~Nitrogen)
+  expand_limits(y=0)
 
-biomass.precip <- arrangeGrob(biomass.plot, precip.plot, ncol=1, nrow=2, heights = c(4,3))
-ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 10, height = 7)
-
-# Plot biomass versus water input
-png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
-ggplot(filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"), aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
+# Plot biomass versus water input png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
+water.response <- 
+  ggplot(filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"), aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
                           group = Water, shape = Water, label = Year)) + 
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_point(size = 2) +
@@ -252,10 +248,12 @@ ggplot(filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"), aes(x
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.8,0.2), 
+        legend.position="none", 
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
-dev.off()
+
+biomass.precip <- arrangeGrob(biomass.plot, precip.plot, water.response, ncol=1, nrow=3, heights = c(3,3,3))
+ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 5, height = 10)
 
