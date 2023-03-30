@@ -51,12 +51,12 @@ ltreb.sum <- data.sum %>% filter(Veg_Comm != "CHAP", Year != 2007) %>%
 
 # LTREB Plots
 png("Graphics/Transects.png",width = 8,height = 4,units = "in",res=300)
-ggplot(ltreb.sum, aes(x = Year, y = Native_mean, group=Veg_Comm, color=Veg_Comm, linetype=Veg_Comm, shape=Veg_Comm)) + 
-  geom_errorbar(aes(ymin = Native_mean-Native_se, ymax = Native_mean+Native_se),width = .1) +
+ggplot(ltreb.sum, aes(x = Year, y = NativeShrub_mean, group=Veg_Comm, color=Veg_Comm, shape=Veg_Comm)) + 
+  geom_errorbar(aes(ymin = NativeShrub_mean-NativeShrub_se, ymax = NativeShrub_mean+NativeShrub_se),width = .1) +
   geom_line() +
   geom_point(size = 2) +
-  labs(x = "Year",
-       y = "Native cover (%)") +
+   labs(x = "Year",
+       y = "Native shrub cover (%)") +
   scale_color_manual(values=c('coral1','black')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
