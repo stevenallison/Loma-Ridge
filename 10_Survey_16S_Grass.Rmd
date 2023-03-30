@@ -403,10 +403,12 @@ ggplot(data = nmds_plus_metadata) +
   theme_bw(base_size = 15) + 
   theme(panel.grid.major = element_blank(),  #remove major-grid labels
         panel.grid.minor = element_blank(),  #remove minor-grid labels
+        axis.title = element_blank(),
+        axis.text = element_text(size = 10),
         legend.position=c(0.1,0.7), 
         legend.title = element_blank(),
         legend.background = element_blank()) +
-  labs(title= '', subtitle = '2D stress = 0.195', fill = 'Treatment', x = '', y = '') +
+  labs(subtitle = '2D stress = 0.195', fill = 'Treatment') +
   theme() + 
   facet_wrap(~Year, nrow=2, ncol=5)
 
