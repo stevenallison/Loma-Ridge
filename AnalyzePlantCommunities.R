@@ -71,6 +71,9 @@ Biomass.means <- Biomass %>%
   summarize(across(everything(),list(mean = mean, se = std.error),na.rm=T)) %>%
   left_join(Annual.precip)
 
+biomass.water.model <-
+nls(Biomass.per.area_mean~a*Water.input/(b+Water.input),
+    filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"),start=list(a=500,b=300))
 
 # Plot native cover in CSS
 png("Graphics/NativeCover.png",width = 8,height = 6,units = "in",res=300)
