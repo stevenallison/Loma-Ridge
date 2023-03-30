@@ -235,11 +235,14 @@ precip.plot <-
 
 # Plot biomass versus water input png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
 water.response <- 
-  ggplot(filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"), aes(x=Water.input, y=(Biomass.per.area_mean), color=Water, 
-                          group = Water, shape = Water, label = Year)) + 
+  ggplot(filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"),
+         aes(x=Water.input, y=Biomass.per.area_mean, color=Water, group = Water, shape = Water)) + 
+  stat_smooth(aes(x=Water.input, y=Biomass.per.area_mean),
+              method = 'nls', formula = 'y~a*x/(b+x)',
+              method.args = list(start=c(a=500,b=300)), se=FALSE,
+              inherit.aes = FALSE, color = "black") +
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_point(size = 2) +
-  # geom_text(size = 1,hjust=-0.25) +
   labs(color = "Water",
        shape = "Water",
        y = "Biomass (g/m^2)",
