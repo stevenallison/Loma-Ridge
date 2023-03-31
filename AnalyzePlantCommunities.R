@@ -279,23 +279,27 @@ water.response <-
 biomass.precip <- arrangeGrob(biomass.plot, precip.plot, water.response, ncol=1, nrow=3, heights = c(3,3,3))
 ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 5, height = 10)
 
-GL.ambient <- filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient")
+GL.ambient.1 <- filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient")
 
 biomass.water.model <-
   nls(Biomass.per.area_mean~a*Water.input/(b+Water.input),
-      GL.ambient,start=list(a=500,b=300))
+      GL.ambient.1,start=list(a=500,b=300))
 
-GL.ambient <- cbind(GL.ambient, select(augment(biomass.water.model),.resid))
+GL.ambient <- cbind(GL.ambient.1, select(augment(biomass.water.model),.resid)) %>%
+  mutate(Water.input_1_2=mean(c(Water.input_1,Water.input_2),na.rm = T)) %>%
+  mutate(Water.input_1_2_3=mean(c(Water.input_1,Water.input_2,Water.input_3),na.rm = T)) %>%
+  mutate(Precip.class = case_when(Water.input<200 ~ "<200",.default = ">200"))
 
 resid.plot <- 
-  ggplot(GL.ambient, aes(x = Water.input_1, y = .resid, group = Water, shape = Water)) + 
+  ggplot(GL.ambient, aes(x = Water.input_1_2_3, y = .resid, group = Water, shape = Water)) + 
   geom_hline(yintercept = 0,lty=2) +
-  geom_point(size = 2, aes(color=Water.input)) +
-  scale_color_gradientn(colors = c('red','blue'),values = c(0,0.1,0.2,1)) +
+  geom_point(size = 2, aes(color = Precip.class)) +
+  scale_color_manual(values=c('red','blue')) +
+  #scale_color_gradientn(colors = c('red','blue'),values = c(0,0.1,0.2,1)) +
   labs(color = "Water input (mm)",
        shape = "Water treatment",
        y = "Biomass residual (g/m^2)",
-       x = "Prior year water input (mm)") +
+       x = "Mean historical water input (mm)") +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -307,5 +311,6 @@ resid.plot <-
         legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
+resid.plot
 
 ggsave("Graphics/Resid.png", device = "png", resid.plot, width = 6, height = 4)
