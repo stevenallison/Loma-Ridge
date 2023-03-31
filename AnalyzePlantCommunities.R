@@ -71,10 +71,6 @@ Biomass.means <- Biomass %>%
   summarize(across(everything(),list(mean = mean, se = std.error),na.rm=T)) %>%
   left_join(Annual.precip)
 
-biomass.water.model <-
-nls(Biomass.per.area_mean~a*Water.input/(b+Water.input),
-    filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"),start=list(a=500,b=300))
-
 # Plot native cover in CSS
 png("Graphics/NativeCover.png",width = 8,height = 6,units = "in",res=300)
 ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water, 
@@ -262,4 +258,17 @@ water.response <-
 
 biomass.precip <- arrangeGrob(biomass.plot, precip.plot, water.response, ncol=1, nrow=3, heights = c(3,3,3))
 ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 5, height = 10)
+
+GL.ambient <- filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient")
+
+biomass.water.model <-
+  nls(Biomass.per.area_mean~a*Water.input/(b+Water.input),
+      GL.ambient,start=list(a=500,b=300))
+
+historical <- cbind(GL.ambient, select(augment(biomass.water.model),.resid))
+# Try case when?
+
+ggplot(augment(biomass.water.model), aes(x = Water.input, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0)
 
