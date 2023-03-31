@@ -1,6 +1,7 @@
 
 library(googledrive)
 library(tidyverse)
+library(broom)
 library(vegan)
 library(gridExtra)
 
@@ -284,10 +285,27 @@ biomass.water.model <-
   nls(Biomass.per.area_mean~a*Water.input/(b+Water.input),
       GL.ambient,start=list(a=500,b=300))
 
-historical <- cbind(GL.ambient, select(augment(biomass.water.model),.resid))
-# Try case when?
+GL.ambient <- cbind(GL.ambient, select(augment(biomass.water.model),.resid))
 
-ggplot(augment(biomass.water.model), aes(x = Water.input, y = .resid)) +
-  geom_point() +
-  geom_hline(yintercept = 0)
+resid.plot <- 
+  ggplot(GL.ambient, aes(x = Water.input_1, y = .resid, group = Water, shape = Water)) + 
+  geom_hline(yintercept = 0,lty=2) +
+  geom_point(size = 2, aes(color=Water.input)) +
+  scale_color_gradientn(colors = c('red','blue'),values = c(0,0.1,0.2,1)) +
+  labs(color = "Water input (mm)",
+       shape = "Water treatment",
+       y = "Biomass residual (g/m^2)",
+       x = "Prior year water input (mm)") +
+  theme_bw(base_size=16) +
+  theme(plot.title = element_text(hjust=0, size=18),
+        axis.text.y=element_text(size=14),
+        axis.text.x=element_text(size=14),
+        axis.title.y=element_text(size=18),
+        axis.title.x=element_text(size=18),
+        legend.position="right", 
+        legend.title = element_text(size=12),
+        legend.text = element_text(size=10),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 
+ggsave("Graphics/Resid.png", device = "png", resid.plot, width = 6, height = 5)
