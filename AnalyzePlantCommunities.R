@@ -91,6 +91,18 @@ Biomass.means <- Biomass %>%
   summarize(across(everything(),list(mean = mean, se = std.error),na.rm=T)) %>%
   left_join(Annual.precip)
 
+GL.ambient.1 <- filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient")
+
+biomass.water.model <-
+  nls(Biomass.per.area_mean~a*Water.input/(b+Water.input),
+      GL.ambient.1,start=list(a=500,b=300))
+
+GL.ambient <- cbind(GL.ambient.1, select(augment(biomass.water.model),.resid)) %>%
+  mutate(Water.input_1_2=mean(c(Water.input_1,Water.input_2),na.rm = T)) %>%
+  mutate(Water.input_1_2_3=mean(c(Water.input_1,Water.input_2,Water.input_3),na.rm = T)) %>%
+  mutate(Precip.class = case_when(Water.input<200 ~ "<200",.default = ">200"))
+
+
 # Plot native cover in CSS
 png("Graphics/NativeCover.png",width = 8,height = 6,units = "in",res=300)
 ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water, 
@@ -206,10 +218,11 @@ biomass.plot <-
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_line() +
   geom_point(size = 2) +
-  labs(color = "Water",
-       linetype = "Water",
-       shape = "Water",
+  labs(color = "Water treatment",
+       linetype = "Water treatment",
+       shape = "Water treatment",
        y = "Biomass (g/m^2)") +
+  ggtitle("A)") +
   scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
@@ -217,10 +230,10 @@ biomass.plot <-
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position="none", 
-        legend.title = element_text(size=14),
+        legend.position=c(0.47,0.77), 
+        legend.title = element_text(size=12),
         legend.key.width= unit(1.5, 'cm'),
-        legend.text = element_text(size=12),
+        legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
@@ -233,6 +246,7 @@ precip.plot <-
        linetype = "Water",
        shape = "Water",
        y = "Water input (mm)") +
+  ggtitle("C)") +
   scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
@@ -240,7 +254,7 @@ precip.plot <-
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.55,0.77), 
+        legend.position="none", 
         legend.title = element_text(size=12),
         legend.key.width= unit(1.5, 'cm'),
         legend.text = element_text(size=10),
@@ -263,6 +277,7 @@ water.response <-
        shape = "Water",
        y = "Biomass (g/m^2)",
        x = "Water input (mm)") +
+  ggtitle("B)") +
   scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
@@ -276,20 +291,6 @@ water.response <-
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-biomass.precip <- arrangeGrob(biomass.plot, precip.plot, water.response, ncol=1, nrow=3, heights = c(3,3,3))
-ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 5, height = 10)
-
-GL.ambient.1 <- filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient")
-
-biomass.water.model <-
-  nls(Biomass.per.area_mean~a*Water.input/(b+Water.input),
-      GL.ambient.1,start=list(a=500,b=300))
-
-GL.ambient <- cbind(GL.ambient.1, select(augment(biomass.water.model),.resid)) %>%
-  mutate(Water.input_1_2=mean(c(Water.input_1,Water.input_2),na.rm = T)) %>%
-  mutate(Water.input_1_2_3=mean(c(Water.input_1,Water.input_2,Water.input_3),na.rm = T)) %>%
-  mutate(Precip.class = case_when(Water.input<200 ~ "<200",.default = ">200"))
-
 resid.plot <- 
   ggplot(GL.ambient, aes(x = Water.input_1_2_3, y = .resid, group = Water, shape = Water)) + 
   geom_hline(yintercept = 0,lty=2) +
@@ -300,6 +301,7 @@ resid.plot <-
        shape = "Water treatment",
        y = "Biomass residual (g/m^2)",
        x = "Mean historical water input (mm)") +
+  ggtitle("D)") +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -311,6 +313,8 @@ resid.plot <-
         legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
-resid.plot
+
+biomass.precip <- arrangeGrob(biomass.plot, water.response, precip.plot, resid.plot, ncol=2, nrow=2, heights = c(3,3))
+ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 12, height = 8)
 
 ggsave("Graphics/Resid.png", device = "png", resid.plot, width = 6, height = 4)
