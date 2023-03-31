@@ -4,11 +4,30 @@ library(tidyverse)
 library(vegan)
 library(gridExtra)
 
-Annual.precip <- drive_get("AnnualPrecipLoma.csv", shared_drive = "Microbes and Global Change") %>%
+precip <- drive_get("AnnualPrecipLoma.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>%
   rename(Year=WaterYear) %>%
-  pivot_longer(cols = !Year, names_to = "Water", values_to = "Water.input")
+  pivot_longer(cols = !Year, names_to = "Water", values_to = "Water.input") %>%
+  mutate(Year_1 = Year+1, Year_2 = Year+2, Year_3 = Year+3)
+
+precip_1 <- precip %>%
+  select(-Year,-Year_2,-Year_3) %>%
+  rename(Year = Year_1, Water.input_1 = Water.input)
+
+precip_2 <- precip %>%
+  select(-Year,-Year_1,-Year_3) %>%
+  rename(Year = Year_2, Water.input_2 = Water.input)
+
+precip_3 <- precip %>%
+  select(-Year,-Year_1,-Year_2) %>%
+  rename(Year = Year_3, Water.input_3 = Water.input)
+
+Annual.precip <- precip %>%
+  select(-Year_1,-Year_2,-Year_3) %>%
+  left_join(precip_1) %>%
+  left_join(precip_2) %>%
+  left_join(precip_3)
 
 veg.species <- read.csv("veg.communities.csv")
 
