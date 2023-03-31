@@ -308,4 +308,4 @@ resid.plot <-
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave("Graphics/Resid.png", device = "png", resid.plot, width = 6, height = 5)
+ggsave("Graphics/Resid.png", device = "png", resid.plot, width = 6, height = 4)
