@@ -1,74 +1,74 @@
 # Loma-Ridge
 Code and data analysis from the Loma Ridge Global Change Experiment and Orange County vegetation transects
 
-<b>4b1e5e15-0404-4fd2-86a5-463aac965a79</b>
+<b>4b1e5e15-0404-4fd2-86a5-463aac965a79</b> | 
 Ouptut folder from qiime, including taxonomy file
 
-ec6392f5-8036-4239-99a1-e15704f78c61
+<b>ec6392f5-8036-4239-99a1-e15704f78c61</b> | 
 Ouptut folder from qiime, including OTU table
 
-Graphics
+<b>Graphics</b> | 
 Folder holding graphics outputs from various scripts
 
-10_Survey_16S_Grass.Rmd
+<b>10_Survey_16S_Grass.Rmd</b> | 
 Script for processing microbial community "survey" data from Loma Ridge
 
-AnalyzePlantCommunities.R
+<b>AnalyzePlantCommunities.R</b> | 
 Script for processing and analyzing plant community data from Loma Ridget
 
-Bray_All.tsv
+<b>Bray_All.tsv</b> | 
 Bray-Curtis distance matrix from OTU data
 
-CleanTimeDateforiButtons.R
+<b>CleanTimeDateforiButtons.R</b> | 
 Script to process iButton data
 
-LICENSE
+<b>LICENSE</b> | 
 The license terms for using this repository
 
-LomaPrecipitationCalculations.R
+<b>LomaPrecipitationCalculations.R</b> | 
 Script to generate daily and annual precipitation inputs at Loma Ridge
 
-NMDS1_coord.csv
+<b>NMDS1_coord.csv</b> | 
 Table of NMDS coordinate outputs from microbial community analyses
 
-OCVegTransects.R
+<b>OCVegTransects.R</b> | 
 Script to process and analyze Orange County vegetation transect data
 
-PlotPrecip.R
+<b>PlotPrecip.R</b> | 
 Script for generating graphics from Loma Ridge precipitation input datasets
 
-ProcessGaugeData.R
+<b>ProcessGaugeData.R</b> | 
 Script to process raw precipitation data from rain gauges
 
-ProcessPlantCommunities.R
+<b>ProcessPlantCommunities.R</b> | 
 Script to tidy plant community data from Loma Ridge
 
-Survey16SormattedNEW_biom
+<b>Survey16SormattedNEW_biom</b> | 
 Intermediary file in OTU table processing
 
-final-filtered-tableNew1.qza
+<b>final-filtered-tableNew1.qza</b> | 
 Subsetted OTU table from qiime output
 
-merged_Pie.tsv
+<b>merged_Pie.tsv</b> | 
 Pielou evenness data from microbial community analyses
 
-merged_alphaSOB.tsv
+<b>merged_alphaSOB.tsv</b> | 
 OTU richness data from microbial community analyses
 
-nmds_plus_meta.csv
+<b>nmds_plus_meta.csv</b> | 
 Data table with NMDS coordinates and community metadata
 
-rared.otu.taxaid.16s.tsv
+<b>rared.otu.taxaid.16s.tsv</b> | 
 Rarified OTU table
 
-samples-to-keepNEW.tsv
+<b>samples-to-keepNEW.tsv</b> | 
 Metadata file for microbial community analyses
 
-taxonomyNew.qza
+<b>taxonomyNew.qza</b> | 
 Taxonomy table from qiime output
 
-veg.biomass.csv
+<b>veg.biomass.csv</b> | 
 Tidy dataset on plant biomass from Loma Ridge
 
-veg.communities.csv
+<b>veg.communities.csv</b> | 
 Tidy dataset on plant community composition from Loma Ridge
