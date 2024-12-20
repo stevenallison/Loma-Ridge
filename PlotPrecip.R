@@ -11,20 +11,23 @@ PrecipRecord <- drive_get("FullPrecipLoma.csv", shared_drive = "Microbes and Glo
   mutate(Day = as.Date(Day,tryFormats=c("%Y-%m-%d","%m/%d/%Y"))) %>%
   mutate(Year = as.numeric(format(Day,"%Y"))) %>%
   mutate(Month = as.numeric(format(Day,"%m"))) %>%
+  mutate(DOY = as.numeric(strftime(Day, format = "%j"))) %>%
+  mutate(DOWY = ifelse(DOY > 274, DOY - 273, DOY + 92)) %>%
   mutate(WaterYear = ifelse(Month %in% 1:9,Year,Year+1)) %>%
   group_by(WaterYear) %>%
   mutate(CumAmbient = cumsum(Ambient), CumReduced = cumsum(Reduced), CumAdded = cumsum(Added))
 
-# Compare to CEB weather station dataset
+#Compare to CEB weather station dataset
 # CEBPrecipLoma <- read.csv("Outputs/DailyCEB.csv") %>%
-#  mutate(Day = as.Date(Day)) %>%
-#  mutate(Year = as.numeric(format(Day,"%Y"))) %>%
-#  mutate(Month = as.numeric(format(Day,"%m"))) %>%
-#  mutate(WaterYear = ifelse(Month %in% 1:9,Year-1,Year))
+# mutate(Day = as.Date(Day)) %>%
+# mutate(Year = as.numeric(format(Day,"%Y"))) %>%
+# mutate(Month = as.numeric(format(Day,"%m"))) %>%
+# mutate(WaterYear = ifelse(Month %in% 1:9,Year-1,Year))
 
 # In the next two plots below, red indicates events that were excluded in the drought manipulation
 # In other words, red shows precip that fell in the ambient but not drought plots
-xlim <- as.Date(c("2006-10-01","2021-09-30"))
+xlim <- as.Date(c("2006-10-01","2024-09-30"))
+# xlim <- as.Date(c("2020-10-01","2024-09-30"))
 pdf("Outputs/LomaPrecip.pdf",height=6,width=30)
 par(cex.axis=1.5,cex.lab=2,font.lab=2,lwd=1.5,tcl=0.4,las=1,mgp=c(3,0.5,0),mar=c(3,5,2,2)+0.1)
 plot(x=PrecipRecord$Day,y=PrecipRecord$Added,xlim=xlim,ylab="Water input (mm)",xlab=NA,type="n")
@@ -36,11 +39,11 @@ legend("topright",c("Ambient","Excluded","Added"),lty=1,col=c("black","red","cya
 # legend("topright",c("Ambient","CEB Ambient","Excluded","Added"),lty=1,col=c("black","green","red","cyan"),cex=1.5)
 dev.off()
 
-## This subsets per water year to help with visualzation 
-PrecipRecordset <- filter(PrecipRecord, Day >= "2020-10-01" & Day <= "2021-09-30")
+## This subsets per water year to help with visualization 
+PrecipRecordset <- filter(PrecipRecord, Day >= "2022-10-01" & Day <= "2024-09-30")
 
-xlim <- as.Date(c("2020-10-01","2021-09-30"))
-pdf("Outputs/LomaPrecipWaterYear2020.pdf",height=6,width=6)
+xlim <- as.Date(c("2022-10-01","2024-09-30"))
+pdf("Outputs/LomaPrecipWaterYear2023-24.pdf",height=6,width=6)
 par(cex.axis=1.5,cex.lab=2,font.lab=2,lwd=1.5,tcl=0.4,las=1,mgp=c(3,0.5,0),mar=c(3,5,2,2)+0.1)
 plot(x=PrecipRecordset$Day,y=PrecipRecordset$Added,xlim=xlim,ylab="Water input (mm)",xlab=NA,type="n")
 arrows(PrecipRecordset$Day,0,PrecipRecordset$Day,PrecipRecordset$Added,length=0,angle=90,code=2,lwd=0.5,col="cyan")
@@ -51,9 +54,11 @@ dev.off()
 
 
 pdf("Outputs/LomaPrecipCumulative.pdf",height=6,width=30)
-d <- ggplot(PrecipRecord, aes(Day, CumAdded)) + geom_line(color="cyan") + ylab("Water input (mm)") +
+d <- ggplot(PrecipRecord, aes(DOWY, CumAdded)) + geom_line(color="cyan") +
+  ylab("Water input (mm)") +
+  xlab("Day of Water Year (1 = Oct 1)") +
   geom_line(aes(y=CumReduced), color="red") +
   geom_line(aes(y=CumAmbient))
-d + facet_grid(~WaterYear, scales = "free_x")
+d + facet_grid(~WaterYear, scales = "fixed")
 dev.off()
 

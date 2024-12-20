@@ -42,6 +42,11 @@ for(i in filenames$name) {
     rbind(AllPrecip.raw)
 }
 
+# Processes data downloaded from weather station
+# AllPrecip.raw <- drive_get("CleanRaw_CR1000_RAWS3_Dat_30Min Aug 20-24.csv", shared_drive = "Microbes and Global Change") %>%
+#  drive_read_string(encoding="UTF-8") %>%
+#  read.csv(text=.)
+
 AllPrecip <- AllPrecip.raw %>%
   filter(Precipitation>0) %>% # keep non-zero measurements
   mutate(Day = as.Date(Day,format="%m/%d/%Y")) %>%
@@ -76,6 +81,7 @@ DailyPrecip <- AllPrecip %>%
 AmbientReduced <- drive_get("ShelterClosureDates.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>%
+  filter(Grassland == T) %>% #choose which ecosystem to analyze
   select(c(ClosureStart,ClosureEnd)) %>%
   mutate(ClosureStart = as.Date(ClosureStart,format="%m/%d/%Y")) %>% #format day
   mutate(ClosureEnd = as.Date(ClosureEnd,format="%m/%d/%Y"))%>% #format day
@@ -101,6 +107,7 @@ AmbientReduced <- drive_get("ShelterClosureDates.csv", shared_drive = "Microbes 
 FullPrecipLoma <- drive_get("WaterAdditionDates.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.) %>%
+  filter(Grassland == T) %>% #choose which ecosystem to analyze
   mutate(Date_Added = as.Date(Date_Added,format="%m/%d/%Y")) %>%
   rename(Day = Date_Added) %>%
   select(Day, Water_Added) %>%
