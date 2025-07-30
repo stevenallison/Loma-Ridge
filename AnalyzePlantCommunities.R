@@ -222,15 +222,15 @@ biomass.plot <-
        linetype = "Water treatment",
        shape = "Water treatment",
        y = "Biomass (g/m^2)") +
-  ggtitle("A)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  ggtitle("B)") +
+  scale_color_manual(values=c('blue','black','red')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position=c(0.47,0.77), 
+        legend.position="none", 
         legend.title = element_text(size=12),
         legend.key.width= unit(1.5, 'cm'),
         legend.text = element_text(size=10),
@@ -246,15 +246,15 @@ precip.plot <-
        linetype = "Water",
        shape = "Water",
        y = "Water input (mm)") +
-  ggtitle("C)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  ggtitle("A)") +
+  scale_color_manual(values=c('blue','black','red'), labels = c("Added","Ambient","Drought")) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position="none", 
+        legend.position=c(0.47,0.77), 
         legend.title = element_text(size=12),
         legend.key.width= unit(1.5, 'cm'),
         legend.text = element_text(size=10),
@@ -270,22 +270,22 @@ water.response <-
   stat_smooth(aes(x=Water.input, y=Biomass.per.area_mean),
               method = 'nls', formula = 'y~a*x/(b+x)',
               method.args = list(start=c(a=500,b=300)), se=FALSE,
-              inherit.aes = FALSE, color = "black") +
+              inherit.aes = FALSE, color = "gray") +
   geom_errorbar(aes(ymin=(Biomass.per.area_mean-Biomass.per.area_se), ymax=(Biomass.per.area_mean+Biomass.per.area_se)), width=.1, lty=1, show.legend = F) +
   geom_point(size = 2) +
   labs(color = "Water",
        shape = "Water",
        y = "Biomass (g/m^2)",
        x = "Water input (mm)") +
-  ggtitle("B)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  # ggtitle("B)") +
+  scale_color_manual(values=c('blue','black','red')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
         axis.title.x=element_text(size=18),
-        legend.position="none", 
+        legend.position="right", 
         legend.title = element_text(size=12),
         legend.text = element_text(size=10),
         panel.grid.major = element_blank(),
@@ -301,7 +301,7 @@ resid.plot <-
        shape = "Water treatment",
        y = "Biomass residual (g/m^2)",
        x = "Mean historical water input (mm)") +
-  ggtitle("D)") +
+  # ggtitle("D)") +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -314,7 +314,10 @@ resid.plot <-
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-biomass.precip <- arrangeGrob(biomass.plot, water.response, precip.plot, resid.plot, ncol=2, nrow=2, heights = c(3,3))
-ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 12, height = 8)
+biomass.precip <- arrangeGrob(precip.plot, biomass.plot, ncol=1, nrow=2, heights = c(3,3))
+ggsave("Graphics/Biomass.png", device = "png", biomass.precip, width = 8, height = 8)
+
+ggsave("Graphics/NPPvsWater.png", device = "png", water.response, width = 8, height = 4)
 
 ggsave("Graphics/Resid.png", device = "png", resid.plot, width = 6, height = 4)
+
