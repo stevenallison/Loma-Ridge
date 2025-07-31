@@ -57,7 +57,7 @@ ggplot(ltreb.sum, aes(x = Year, y = NativeShrub_mean, group=Veg_Comm, color=Veg_
   geom_point(size = 2) +
    labs(x = "Year",
        y = "Native shrub cover (%)") +
-  scale_color_manual(values=c('coral1','black')) +
+  scale_color_manual(values=c('chocolate4','green4')) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),

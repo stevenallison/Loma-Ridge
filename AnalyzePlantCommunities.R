@@ -114,7 +114,9 @@ ggplot(veg.means, aes(x=Year, y=(Native_mean), color=Water,
        linetype = "Water",
        shape = "Water",
        y = "Native cover (%)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  scale_color_manual(values=c('blue','black','red'), labels = c("Added","Ambient","Drought")) +
+  scale_linetype_discrete(labels = c("Added","Ambient","Drought")) +
+  scale_shape_discrete(labels = c("Added","Ambient","Drought")) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -141,7 +143,9 @@ ggplot(veg.means, aes(x=Year, y=(Native.Rel.Ab_mean), color=Water,
        linetype = "Water",
        shape = "Water",
        y = "Native relative abundance") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  scale_color_manual(values=c('blue','black','red'), labels = c("Added","Ambient","Drought")) +
+  scale_linetype_discrete(labels = c("Added","Ambient","Drought")) +
+  scale_shape_discrete(labels = c("Added","Ambient","Drought")) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -168,7 +172,9 @@ ggplot(filter(veg.means,Ecosystem=="CSS"), aes(x=Year, y=(`Native Shrub_mean`), 
        linetype = "Water",
        shape = "Water",
        y = "Native shrub cover (%)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  scale_color_manual(values=c('blue','black','red'), labels = c("Added","Ambient","Drought")) +
+  scale_linetype_discrete(labels = c("Added","Ambient","Drought")) +
+  scale_shape_discrete(labels = c("Added","Ambient","Drought")) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -195,7 +201,8 @@ ggplot(veg.means, aes(x=Water.input, y=(Shannon.diversity_mean), color=Water,
        shape = "Water",
        y = "Shannon diversity",
        x = "Water input (mm)") +
-  scale_color_manual(values=c('#619CFF','#00BA38','#F8766D')) +
+  scale_color_manual(values=c('blue','black','red'), labels = c("Added","Ambient","Drought")) +
+  scale_shape_discrete(labels = c("Added","Ambient","Drought")) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -225,7 +232,7 @@ biomass.plot <-
   ggtitle("B)") +
   scale_color_manual(values=c('blue','black','red')) +
   theme_bw(base_size=16) +
-  theme(plot.title = element_text(hjust=0, size=18),
+  theme(plot.title = element_text(hjust=0, size=18, margin = margin(b = -20, l = 5)),
         axis.text.y=element_text(size=14),
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
@@ -248,8 +255,10 @@ precip.plot <-
        y = "Water input (mm)") +
   ggtitle("A)") +
   scale_color_manual(values=c('blue','black','red'), labels = c("Added","Ambient","Drought")) +
+  scale_linetype_discrete(labels = c("Added","Ambient","Drought")) +
+  scale_shape_discrete(labels = c("Added","Ambient","Drought")) +
   theme_bw(base_size=16) +
-  theme(plot.title = element_text(hjust=0, size=18),
+  theme(plot.title = element_text(hjust=0, size=18, margin = margin(b = -20, l = 5)),
         axis.text.y=element_text(size=14),
         axis.text.x=element_text(size=14),
         axis.title.y=element_text(size=18),
@@ -263,7 +272,8 @@ precip.plot <-
         panel.grid.minor = element_blank()) +
   expand_limits(y=0)
 
-# Plot biomass versus water input png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
+# Plot biomass versus water input
+png("Graphics/BiomassWater.png",width = 8,height = 4,units = "in",res=300)
 water.response <- 
   ggplot(filter(Biomass.means,Ecosystem=="Grassland" & Nitrogen=="Ambient"),
          aes(x=Water.input, y=Biomass.per.area_mean, color=Water, group = Water, shape = Water)) + 
@@ -277,8 +287,8 @@ water.response <-
        shape = "Water",
        y = "Biomass (g/m^2)",
        x = "Water input (mm)") +
-  # ggtitle("B)") +
-  scale_color_manual(values=c('blue','black','red')) +
+  scale_color_manual(values=c('blue','black','red'), labels = c("Added","Ambient","Drought")) +
+  scale_shape_discrete(labels = c("Added","Ambient","Drought")) +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
@@ -296,12 +306,10 @@ resid.plot <-
   geom_hline(yintercept = 0,lty=2) +
   geom_point(size = 2, aes(color = Precip.class)) +
   scale_color_manual(values=c('red','blue')) +
-  #scale_color_gradientn(colors = c('red','blue'),values = c(0,0.1,0.2,1)) +
   labs(color = "Water input (mm)",
        shape = "Water treatment",
        y = "Biomass residual (g/m^2)",
        x = "Mean historical water input (mm)") +
-  # ggtitle("D)") +
   theme_bw(base_size=16) +
   theme(plot.title = element_text(hjust=0, size=18),
         axis.text.y=element_text(size=14),
