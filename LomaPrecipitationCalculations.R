@@ -7,6 +7,7 @@
 
 ## Call your downloaded packages
 library(googledrive)
+library(googlesheets4)
 library(tidyr)
 library(purrr)
 library(readr)
@@ -78,13 +79,12 @@ DailyPrecip <- AllPrecip %>%
 # We also need to create a column called Reduced to add 0 as precipitation.
 # Join Closures object with DailyPrecip object
 # Note: This object will have new dates that correspond to Closures
-AmbientReduced <- drive_get("ShelterClosureDates.csv", shared_drive = "Microbes and Global Change") %>%
-  drive_read_string(encoding="UTF-8") %>%
-  read.csv(text=.) %>%
-  filter(Grassland == T) %>% #choose which ecosystem to analyze
+AmbientReduced <- drive_get("ShelterClosureDates", shared_drive = "Microbes and Global Change") %>%
+  read_sheet() %>%
+  filter(Grassland == "T") %>% #choose which ecosystem to analyze
   select(c(ClosureStart,ClosureEnd)) %>%
   mutate(ClosureStart = as.Date(ClosureStart,format="%m/%d/%Y")) %>% #format day
-  mutate(ClosureEnd = as.Date(ClosureEnd,format="%m/%d/%Y"))%>% #format day
+  mutate(ClosureEnd = as.Date(ClosureEnd,format="%m/%d/%Y")) %>% #format day
   mutate(Day = as.Date(ClosureStart,format="%Y-%m-%d")) %>% #same date as closureStart to join
   mutate(Day = purrr::map2(ClosureStart, ClosureEnd, seq, "day")) %>% #create sequence
   unnest(Day, keep_empty = TRUE) %>%
@@ -104,10 +104,9 @@ AmbientReduced <- drive_get("ShelterClosureDates.csv", shared_drive = "Microbes 
 # Join with ReducedAmbient object
 # This will create dates that were not included in ReducedAmbient
 
-FullPrecipLoma <- drive_get("WaterAdditionDates.csv", shared_drive = "Microbes and Global Change") %>%
-  drive_read_string(encoding="UTF-8") %>%
-  read.csv(text=.) %>%
-  filter(Grassland == T) %>% #choose which ecosystem to analyze
+FullPrecipLoma <- drive_get("WaterAdditionDates", shared_drive = "Microbes and Global Change") %>%
+  read_sheet() %>%
+  filter(Grassland == "T") %>% #choose which ecosystem to analyze
   mutate(Date_Added = as.Date(Date_Added,format="%m/%d/%Y")) %>%
   rename(Day = Date_Added) %>%
   select(Day, Water_Added) %>%
@@ -133,11 +132,11 @@ AnnualSums <- FullPrecipLoma %>%
 ###############################################################################
 
 ## This object has reduced, ambient, and added precipitation treatments
-write.table(FullPrecipLoma,"Outputs/FullPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
+write.table(FullPrecipLoma,"FullPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
 
 ## Record of days with ambient precipitation
-write.table(DailyPrecip,"Outputs/DailyAmbientPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
+write.table(DailyPrecip,"DailyAmbientPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
 
 ## Annual sums from precipitation treatments
-write.table(AnnualSums,"Outputs/AnnualPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
+write.table(AnnualSums,"AnnualPrecipLoma.csv",quote=F,row.names=F,sep=",",na="")
 
