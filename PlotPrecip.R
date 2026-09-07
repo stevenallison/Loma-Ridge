@@ -26,9 +26,9 @@ PrecipRecord <- drive_get("FullPrecipLoma.csv", shared_drive = "Microbes and Glo
 
 # In the next two plots below, red indicates events that were excluded in the drought manipulation
 # In other words, red shows precip that fell in the ambient but not drought plots
-xlim <- as.Date(c("2006-10-01","2024-09-30"))
+xlim <- as.Date(c("2006-10-01","2026-09-30"))
 # xlim <- as.Date(c("2020-10-01","2024-09-30"))
-pdf("Outputs/LomaPrecip.pdf",height=6,width=30)
+pdf("LomaPrecip.pdf",height=6,width=30)
 par(cex.axis=1.5,cex.lab=2,font.lab=2,lwd=1.5,tcl=0.4,las=1,mgp=c(3,0.5,0),mar=c(3,5,2,2)+0.1)
 plot(x=PrecipRecord$Day,y=PrecipRecord$Added,xlim=xlim,ylab="Water input (mm)",xlab=NA,type="n")
 arrows(PrecipRecord$Day,0,PrecipRecord$Day,PrecipRecord$Added,length=0,angle=90,code=2,lwd=0.5,col="cyan")
@@ -40,10 +40,10 @@ legend("topright",c("Ambient","Excluded","Added"),lty=1,col=c("black","red","cya
 dev.off()
 
 ## This subsets per water year to help with visualization 
-PrecipRecordset <- filter(PrecipRecord, Day >= "2022-10-01" & Day <= "2024-09-30")
+PrecipRecordset <- filter(PrecipRecord, Day >= "2024-10-01" & Day <= "2026-09-30")
 
-xlim <- as.Date(c("2022-10-01","2024-09-30"))
-pdf("Outputs/LomaPrecipWaterYear2023-24.pdf",height=6,width=6)
+xlim <- as.Date(c("2024-10-01","2026-09-30"))
+pdf("LomaPrecipWaterYear2024-26.pdf",height=6,width=6)
 par(cex.axis=1.5,cex.lab=2,font.lab=2,lwd=1.5,tcl=0.4,las=1,mgp=c(3,0.5,0),mar=c(3,5,2,2)+0.1)
 plot(x=PrecipRecordset$Day,y=PrecipRecordset$Added,xlim=xlim,ylab="Water input (mm)",xlab=NA,type="n")
 arrows(PrecipRecordset$Day,0,PrecipRecordset$Day,PrecipRecordset$Added,length=0,angle=90,code=2,lwd=0.5,col="cyan")
@@ -53,7 +53,7 @@ legend("topright",c("Ambient","Excluded","Added"),lty=1,col=c("black","red","cya
 dev.off()
 
 
-pdf("Outputs/LomaPrecipCumulative.pdf",height=6,width=30)
+pdf("LomaPrecipCumulative.pdf",height=6,width=35)
 d <- ggplot(PrecipRecord, aes(DOWY, CumAdded)) + geom_line(color="cyan") +
   ylab("Water input (mm)") +
   xlab("Day of Water Year (1 = Oct 1)") +
