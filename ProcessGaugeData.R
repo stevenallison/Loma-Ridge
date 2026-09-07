@@ -14,7 +14,7 @@ library(googledrive)
 library(dplyr)
 
 # Input Hicks Canyon OC Public Works data
-Precip.Hicks.raw <- drive_get("GaugeDataToClean/HICKS_CYN_2224.csv", shared_drive = "Microbes and Global Change") %>%
+Precip.Hicks.raw <- drive_get("GaugeDataToClean/HICKS_CYN_2426.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.,stringsAsFactors = F,header = T)
 
@@ -33,7 +33,7 @@ Precip.Hicks <- Precip.Hicks.raw %>%
 
 # Save this file. This file will need to be uploaded to the "RawData" folder 
 # Make sure the name includes "CleanRaw" otherwise it won't be identified by the R script
-write.table(Precip.Hicks,"CleanRawHicks2224.csv",quote=F,row.names=F,sep=",",na="")
+write.table(Precip.Hicks,"CleanRawHicks2426.csv",quote=F,row.names=F,sep=",",na="")
 
 # The following code processes data from other sources, namely the Loma UCI weather station #############################################
 # Input Loma weather station data to process (from manual download)
