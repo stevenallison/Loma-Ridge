@@ -37,7 +37,7 @@ write.table(Precip.Hicks,"CleanRawHicks2426.csv",quote=F,row.names=F,sep=",",na=
 
 # The following code processes data from other sources, namely the Loma UCI weather station #############################################
 # Input Loma weather station data to process (from manual download)
-Precip.UCI.raw.man <- drive_get("GaugeDataToClean/CR1000_RAWS3_Dat_30Min Aug 20-24.csv", shared_drive = "Microbes and Global Change") %>%
+Precip.UCI.raw.man <- drive_get("GaugeDataToClean/CR1000_RAWS3_Dat_30Min_2024-26.csv", shared_drive = "Microbes and Global Change") %>%
   drive_read_string(encoding="UTF-8") %>%
   read.csv(text=.,stringsAsFactors = F,header = T)
 
@@ -54,7 +54,7 @@ Precip.UCI.man <- Precip.UCI.raw.man %>%
   arrange(Date) %>%
   select(c(Date,Precipitation,Source,Day,Units))
 
-write.table(Precip.UCI.man,"Outputs/CleanRaw_CR1000_RAWS3_Dat_30Min Aug 20-24.csv",quote=F,row.names=F,sep=",",na="")
+write.table(Precip.UCI.man,"CleanRaw_CR1000_RAWS3_Dat_30Min_2024-26.csv",quote=F,row.names=F,sep=",",na="")
 
 # Input Loma weather station data to process (downloaded from RAWS site)
 Precip.UCI.raw <- drive_get("GaugeDataToClean/2022-09-30 EastLomaUCIRAWS.csv", shared_drive = "Microbes and Global Change") %>%

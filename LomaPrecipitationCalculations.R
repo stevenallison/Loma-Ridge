@@ -44,9 +44,9 @@ for(i in filenames$name) {
 }
 
 # Processes data downloaded from weather station
-# AllPrecip.raw <- drive_get("CleanRaw_CR1000_RAWS3_Dat_30Min Aug 20-24.csv", shared_drive = "Microbes and Global Change") %>%
-#  drive_read_string(encoding="UTF-8") %>%
-#  read.csv(text=.)
+# AllPrecip.raw <- drive_get("CleanRaw_CR1000_RAWS3_Dat_30Min_2024-26.csv", shared_drive = "Microbes and Global Change") %>%
+#   drive_read_string(encoding="UTF-8") %>%
+#   read.csv(text=.)
 
 AllPrecip <- AllPrecip.raw %>%
   filter(Precipitation>0) %>% # keep non-zero measurements
